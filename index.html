@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.6</title>
+<title>SchooMy 活用マップ ｜ v1.7</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -103,6 +103,9 @@ body.schm-intro-lock { overflow: hidden !important; }
   border-radius: 999px;
 }
 .schm-intro-loading-text { color: #ffffff; font-weight: 900; font-size: 16px; letter-spacing: 0.1em; }
+/* v1.7: 事例ピン(センサーアイコン+写真吹き出し)と事例カードを非表示＝マップはキャラのみ */
+.schm-map-pin-wrap { display: none !important; }
+.schm-map-panel { display: none !important; }
 @media screen and (max-width: 760px) {
   .schm-intro-jitsu { width: 62px; }
   .schm-intro-loading-boy { width: 80px; }
@@ -966,7 +969,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.6</span>
+        <span class="schm-map-version">LP v1.7</span>
       </div>
     </div>
   </div>
@@ -1333,11 +1336,14 @@ body.schm-intro-lock { overflow: hidden !important; }
       if (loadingEl) loadingEl.style.display = 'none';
       if (readyEl) readyEl.style.display = 'flex';
 
-      renderAnchors();
-      renderCard();
-      if (autoplay) startTimer();
+      // v1.7: 事例ピン・事例カードは非表示（マップはキャラのみ）。
+      //       描画とオートプレイを止める。casesの読み込み自体は残してあるので、
+      //       将来また事例を出したい時はこの3行を有効化すれば戻せる。
+      // renderAnchors();
+      // renderCard();
+      // if (autoplay) startTimer();
 
-      loadCharacters().catch(e => console.warn('[SchooMy Map LP v1.0] characters load error:', e));
+      loadCharacters().catch(e => console.warn('[SchooMy Map LP v1.7] characters load error:', e));
 
       setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 50);
     } catch (e) { console.error('[SchooMy Map LP v1.0] main error:', e); }
@@ -1646,14 +1652,15 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.6 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.7 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
      v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
      v1.3変更: イントロ背景色をキャラの髪のオレンジ #E3AB4A に変更（ブランドオレンジ#E88A0Aはマップ内ボタン等で維持）。
      v1.4変更: イントロ/Loading背景を壁紙準拠の#E4A334に。Loading画面に後ろ向きの男の子(assets/intro-boy.png)を中央表示し、スピナーを4色(ティール/クリーム/オレンジ/ブルー)の左→右フローバーに変更。
      v1.5変更: Loadingに「じっ」(assets/intro-jitsu.png)を男の子の上に追加。進行バーを“流れ”から“0→100%の確定進行”に変更(満タン=完了→マップ)。白トラックに影＋枠を付けオレンジ背景でも目立つように。男の子を142pxに。
-     v1.6変更: 進行バーをグラデから“べた塗り4色”に(比率 ティール31/クリーム46/オレンジ8/ブルー15、縦帯画像準拠・色はブランドhex)。じっ76px/男の子96px(スマホは62/80)に縮小。 -->
+     v1.6変更: 進行バーをグラデから“べた塗り4色”に(比率 ティール31/クリーム46/オレンジ8/ブルー15、縦帯画像準拠・色はブランドhex)。じっ76px/男の子96px(スマホは62/80)に縮小。
+     v1.7変更: マップ上の事例ピン(センサーアイコン+写真吹き出し)と左下の事例カードを非表示にし、マップはキャラのみに。casesの読み込みは温存（main内の3行を戻せば復活可）。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
