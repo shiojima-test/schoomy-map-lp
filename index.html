@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.17</title>
+<title>SchooMy 活用マップ ｜ v1.18</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -17,6 +17,7 @@
      v1.15: コマリーのオバケのモーダル本文をcases CSVの「LPayashi」列に変更（空欄ならdescriptionにフォールバック／写真・詳しく見るは無変更／characters側LPmessageとは独立）
      v1.16: オバケのモーダル名前欄(オレンジ文字)をcases CSVの「hakken」列に変更（空欄ならtitleにフォールバック／本文LPayashi・写真・詳しく見るは無変更）
      v1.17: LPのみ「フッターナビ(各種申し込み等)」をHTML削除＆「スクーミースポット」キャラを非表示（シート無変更＝TOPは従来どおり）
+     v1.18: LPのみ SchooMy Worldロゴを復活（テキストリンクは削除のまま）＆右下oVice(フェスタ)ボタンを削除
 ====================================================== -->
 <style>
   html, body {
@@ -504,12 +505,14 @@ body.schm-intro-lock { overflow: hidden !important; }
 <!-- ▼▼ ナビ + マップ全体ラッパー ▼▼ -->
 <div class="schoomy-nav-overlay-host">
 
-  <!-- ====== ナビゲーションオーバーレイ（PCのみ）: v1.17でLPから削除（各種申し込み等） ====== -->
+  <!-- ====== ナビゲーションオーバーレイ（PCのみ）: v1.17でテキストリンク削除／v1.18でロゴのみ復活 ====== -->
+  <nav class="schoomy-nav-overlay">
+    <a href="https://schoomy.com/" class="schoomy-nav-logo">
+      <img src="https://lh3.googleusercontent.com/d/1JKqVE1mtkxz2bQMi7wRB851-qwLqfZzj" alt="SchooMy">
+    </a>
+  </nav>
 
-  <!-- ====== oVice誘導ボタン（PC版のみ、右下） ====== -->
-  <a class="schoomy-ovice-button" href="https://app.ovice.com/ws/schoomyworld/" target="_blank" rel="noopener noreferrer">
-    <img src="https://lh3.googleusercontent.com/d/1J3cKdgFO9zrKtZIVMqaOl6tgSvUtGrw9" alt="SchooMy World oVice">
-  </a>
+  <!-- ====== oVice誘導ボタン: v1.18でLPから削除 ====== -->
 
   <!-- ====== ↓↓↓ ここからマップv3.5本体 ↓↓↓ ====== -->
   <div class="schm-map-root" id="schmMapRoot" data-version="3.5">
@@ -966,7 +969,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.17</span>
+        <span class="schm-map-version">LP v1.18</span>
       </div>
     </div>
   </div>
@@ -1884,4 +1887,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.17 / LPのみフッターナビ削除＆スクーミースポット非表示（TOP無変更） -->
+<!-- SchooMy 活用マップ LP v1.18 / LPのみロゴ復活＋oVice(フェスタ)ボタン削除（TOP無変更） -->
