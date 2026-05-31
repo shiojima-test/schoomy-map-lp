@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.13</title>
+<title>SchooMy 活用マップ ｜ v1.14</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -13,6 +13,7 @@
      v1.11: モーダル本文にcharacters CSVの「LPmessage」列を表示（吹き出しは従来のmessageのまま／LPmessage空欄ならmessageにフォールバック／TOPは無変更）
      v1.12: 全画面イントロ画像をプレースホルダーから本番5枚(ayashi01-05.png / schoomy.com)に差し替え
      v1.13: イントロのドット・スクロールヒント・スキップボタンを廃止／スライド余白を詰めて画像を少し大きく(9vh8vw→6vh5vw)
+     v1.14: イントロ下部に控えめな下向き矢印(↓)だけを表示（白半透明・ふわっと上下・クリック判定なし・最後の画像でLoading移行時に消える）
 ====================================================== -->
 <style>
   html, body {
@@ -56,6 +57,16 @@ body.schm-intro-lock { overflow: hidden !important; }
   filter: drop-shadow(0 12px 32px rgba(0,0,0,0.18));
 }
 /* v1.13: ドット・スクロールヒント・スキップを廃止 */
+/* v1.14: 控えめな下向き矢印だけを下部中央に表示（クリック判定なし・finish時にJSで非表示） */
+.schm-intro-arrow {
+  position: absolute; left: 0; right: 0; bottom: 30px; text-align: center;
+  color: #ffffff; font-size: 30px; line-height: 1; font-weight: 400;
+  opacity: 0.55; z-index: 3; pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  animation: schmIntroArrowBob 1.8s ease-in-out infinite;
+}
+@keyframes schmIntroArrowBob { 0%,100%{ transform: translateY(0); opacity: 0.5; } 50%{ transform: translateY(6px); opacity: 0.7; } }
+@media screen and (max-width: 760px) { .schm-intro-arrow { bottom: 24px; font-size: 26px; } }
 .schm-intro-loading {
   position: absolute; inset: 0; background: #E4A334; z-index: 5;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
@@ -112,6 +123,7 @@ body.schm-intro-lock { overflow: hidden !important; }
 <!-- ====== v1.2 全画面イントロ（スクロール連動→Loading→マップ） ====== -->
 <div id="schmIntro" aria-hidden="false">
   <div class="schm-intro-stage" id="schmIntroStage"></div>
+  <div class="schm-intro-arrow" id="schmIntroHint" aria-hidden="true">&#8595;</div>
   <div class="schm-intro-loading" id="schmIntroLoading">
     <div class="schm-intro-figure">
       <img class="schm-intro-jitsu" src="assets/intro-jitsu.png" alt="じっ">
@@ -962,7 +974,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.13</span>
+        <span class="schm-map-version">LP v1.14</span>
       </div>
     </div>
   </div>
@@ -1874,4 +1886,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.13 / イントロのドット・ヒント・スキップ廃止＋画像を少し拡大 -->
+<!-- SchooMy 活用マップ LP v1.14 / イントロ下部に控えめな下向き矢印を表示 -->
