@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.11</title>
+<title>SchooMy 活用マップ ｜ v1.12</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -11,6 +11,7 @@
      新機能: キャラクリックでページ内モーダル表示（遷移なし）
      データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
      v1.11: モーダル本文にcharacters CSVの「LPmessage」列を表示（吹き出しは従来のmessageのまま／LPmessage空欄ならmessageにフォールバック／TOPは無変更）
+     v1.12: 全画面イントロ画像をプレースホルダーから本番5枚(ayashi01-05.png / schoomy.com)に差し替え
 ====================================================== -->
 <style>
   html, body {
@@ -985,7 +986,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.11</span>
+        <span class="schm-map-version">LP v1.12</span>
       </div>
     </div>
   </div>
@@ -1766,11 +1767,11 @@ body.schm-intro-lock { overflow: hidden !important; }
 
   // ★★★ 本番画像はここを差し替え（透過PNGのURLを順番に。枚数の増減も可）★★★
   const INTRO_IMAGES = [
-    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E1%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%201%20/%205%3C/text%3E%3C/svg%3E',
-    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E2%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%202%20/%205%3C/text%3E%3C/svg%3E',
-    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E3%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%203%20/%205%3C/text%3E%3C/svg%3E',
-    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E4%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%204%20/%205%3C/text%3E%3C/svg%3E',
-    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E5%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%205%20/%205%3C/text%3E%3C/svg%3E'
+    'https://schoomy.com/wp-content/uploads/2026/05/ayashi01.png',
+    'https://schoomy.com/wp-content/uploads/2026/05/ayashi02.png',
+    'https://schoomy.com/wp-content/uploads/2026/05/ayashi03.png',
+    'https://schoomy.com/wp-content/uploads/2026/05/ayashi04.png',
+    'https://schoomy.com/wp-content/uploads/2026/05/ayashi05.png'
   ];
   // ★★★ ここまで ★★★
 
@@ -1904,4 +1905,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.11 / モーダル本文=LPmessage列対応 -->
+<!-- SchooMy 活用マップ LP v1.12 / イントロ画像5枚を本番(ayashi01-05)に差し替え -->
