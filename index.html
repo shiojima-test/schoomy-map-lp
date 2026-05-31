@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.1</title>
+<title>SchooMy 活用マップ ｜ v1.2</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
-     SchooMy 活用マップ LP v1.1
+     SchooMy 活用マップ LP v1.2
      base: Navigation Overlay v6.0 + Map v3.5
      新機能: キャラクリックでページ内モーダル表示（遷移なし）
      データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
@@ -20,8 +20,88 @@
   }
   body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 </style>
+
+<style>
+/* =========================================================
+   v1.2 新規: 全画面イントロ（スクロール連動で画像切替→Loading→マップ）
+   背景=SchooMyオレンジ。画像は透過PNG想定。毎回アクセスで表示。
+========================================================= */
+#schmIntro {
+  position: fixed; inset: 0; z-index: 10000;
+  background: #E88A0A;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; touch-action: none;
+  font-family: "Noto Sans JP", "Meiryo", sans-serif;
+}
+#schmIntro.is-hidden {
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+body.schm-intro-lock { overflow: hidden !important; }
+.schm-intro-stage { position: relative; width: 100%; height: 100%; cursor: pointer; }
+.schm-intro-slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 9vh 8vw; box-sizing: border-box;
+  opacity: 0; transform: scale(0.97);
+  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.schm-intro-slide.is-active { opacity: 1; transform: scale(1); }
+.schm-intro-slide img {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,0.18));
+}
+.schm-intro-dots {
+  position: absolute; left: 0; right: 0; bottom: 26px;
+  display: flex; gap: 10px; justify-content: center; z-index: 3;
+}
+.schm-intro-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,0.45); transition: 0.3s;
+}
+.schm-intro-dot.is-active { background: #ffffff; transform: scale(1.3); }
+.schm-intro-hint {
+  position: absolute; left: 0; right: 0; bottom: 50px; text-align: center;
+  color: #ffffff; font-weight: 700; font-size: 13px; letter-spacing: 0.06em;
+  opacity: 0.92; z-index: 3; animation: schmIntroHintBob 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes schmIntroHintBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
+.schm-intro-skip {
+  position: absolute; top: 18px; right: 18px; z-index: 4;
+  background: rgba(255,255,255,0.2); color: #ffffff; border: none;
+  border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: 12px;
+  cursor: pointer; font-family: inherit; transition: 0.2s;
+}
+.schm-intro-skip:hover { background: rgba(255,255,255,0.35); }
+.schm-intro-loading {
+  position: absolute; inset: 0; background: #E88A0A; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  opacity: 0; visibility: hidden; transition: opacity 0.4s ease;
+}
+.schm-intro-loading.is-active { opacity: 1; visibility: visible; }
+.schm-intro-spinner {
+  width: 46px; height: 46px; border: 4px solid rgba(255,255,255,0.35);
+  border-top-color: #ffffff; border-radius: 50%; animation: schmIntroSpin 0.8s linear infinite;
+}
+@keyframes schmIntroSpin { to { transform: rotate(360deg); } }
+.schm-intro-loading-text { color: #ffffff; font-weight: 900; font-size: 16px; letter-spacing: 0.1em; }
+</style>
 </head>
 <body>
+<!-- ====== v1.2 全画面イントロ（スクロール連動→Loading→マップ） ====== -->
+<div id="schmIntro" aria-hidden="false">
+  <div class="schm-intro-stage" id="schmIntroStage"></div>
+  <div class="schm-intro-dots" id="schmIntroDots"></div>
+  <div class="schm-intro-hint" id="schmIntroHint">スクロールで進む &#8595;</div>
+  <button type="button" class="schm-intro-skip" id="schmIntroSkip">スキップ</button>
+  <div class="schm-intro-loading" id="schmIntroLoading">
+    <div class="schm-intro-spinner"></div>
+    <div class="schm-intro-loading-text">Loading&#8230;</div>
+  </div>
+</div>
+
 
 <!-- ====================================================== -->
 <!-- SchooMy Map + Navigation Overlay v6.0                  -->
@@ -862,7 +942,7 @@
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.1</span>
+        <span class="schm-map-version">LP v1.2</span>
       </div>
     </div>
   </div>
@@ -1542,8 +1622,130 @@
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.1 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.2 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
-              横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。 -->
+              横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
+     v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。 -->
+
+<script>
+/* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
+(function(){
+  'use strict';
+
+  // ★★★ 本番画像はここを差し替え（透過PNGのURLを順番に。枚数の増減も可）★★★
+  const INTRO_IMAGES = [
+    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E1%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%201%20/%205%3C/text%3E%3C/svg%3E',
+    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E2%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%202%20/%205%3C/text%3E%3C/svg%3E',
+    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E3%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%203%20/%205%3C/text%3E%3C/svg%3E',
+    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E4%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%204%20/%205%3C/text%3E%3C/svg%3E',
+    'data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20640%20640%27%3E%3Crect%20x%3D%2744%27%20y%3D%2744%27%20width%3D%27552%27%20height%3D%27552%27%20rx%3D%2746%27%20fill%3D%27rgba%28255%2C255%2C255%2C0.10%29%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%276%27%20stroke-dasharray%3D%2720%2018%27/%3E%3Ctext%20x%3D%27320%27%20y%3D%27300%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%27150%27%20font-weight%3D%27900%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%3E5%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27380%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2734%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.95%27%3E%E5%B7%AE%E3%81%97%E6%9B%BF%E3%81%88%E7%94%A8%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%3C/text%3E%3Ctext%20x%3D%27320%27%20y%3D%27428%27%20font-family%3D%27%22Noto%20Sans%20JP%22%2Csans-serif%27%20font-size%3D%2724%27%20font-weight%3D%27700%27%20fill%3D%27%23ffffff%27%20text-anchor%3D%27middle%27%20opacity%3D%270.8%27%3E%E9%80%8F%E9%81%8EPNG%205%20/%205%3C/text%3E%3C/svg%3E'
+  ];
+  // ★★★ ここまで ★★★
+
+  const LOADING_MS = 1500; // Loading表示の長さ(ms)
+
+  const intro = document.getElementById('schmIntro');
+  if (!intro) return;
+  if (!INTRO_IMAGES.length) { intro.parentNode && intro.parentNode.removeChild(intro); return; }
+
+  const stage   = document.getElementById('schmIntroStage');
+  const dotsWrap = document.getElementById('schmIntroDots');
+  const loading = document.getElementById('schmIntroLoading');
+  const hint    = document.getElementById('schmIntroHint');
+  const skip    = document.getElementById('schmIntroSkip');
+
+  let idx = 0, animating = false, finished = false;
+
+  document.body.classList.add('schm-intro-lock');
+
+  // スライド & ドット生成
+  INTRO_IMAGES.forEach(function(src, i){
+    const slide = document.createElement('div');
+    slide.className = 'schm-intro-slide' + (i === 0 ? ' is-active' : '');
+    const img = document.createElement('img');
+    img.src = src; img.alt = 'intro ' + (i+1); img.draggable = false;
+    slide.appendChild(img);
+    stage.appendChild(slide);
+
+    const dot = document.createElement('div');
+    dot.className = 'schm-intro-dot' + (i === 0 ? ' is-active' : '');
+    dotsWrap.appendChild(dot);
+  });
+  const slides = stage.querySelectorAll('.schm-intro-slide');
+  const dots = dotsWrap.querySelectorAll('.schm-intro-dot');
+
+  function show(n){
+    slides.forEach(function(s, i){ s.classList.toggle('is-active', i === n); });
+    dots.forEach(function(d, i){ d.classList.toggle('is-active', i === n); });
+  }
+
+  function advance(){
+    if (animating || finished) return;
+    if (idx < INTRO_IMAGES.length - 1) {
+      animating = true; idx++; show(idx);
+      setTimeout(function(){ animating = false; }, 560);
+    } else {
+      finish();
+    }
+  }
+  function back(){
+    if (animating || finished) return;
+    if (idx > 0) {
+      animating = true; idx--; show(idx);
+      setTimeout(function(){ animating = false; }, 560);
+    }
+  }
+  function finish(){
+    if (finished) return; finished = true;
+    if (hint) hint.style.display = 'none';
+    loading.classList.add('is-active');
+    setTimeout(closeIntro, LOADING_MS);
+  }
+  function closeIntro(){
+    intro.classList.add('is-hidden');
+    intro.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('schm-intro-lock');
+    setTimeout(function(){ if (intro && intro.parentNode) intro.parentNode.removeChild(intro); }, 700);
+    try { window.dispatchEvent(new Event('resize')); } catch(e){}
+  }
+
+  // ホイール（1ジェスチャ=1枚。クールダウンで取りこぼし/飛ばし防止）
+  let wheelAcc = 0, wheelCD = false;
+  intro.addEventListener('wheel', function(e){
+    e.preventDefault();
+    if (finished || wheelCD) return;
+    wheelAcc += e.deltaY;
+    if (Math.abs(wheelAcc) > 40) {
+      (wheelAcc > 0) ? advance() : back();
+      wheelAcc = 0; wheelCD = true;
+      setTimeout(function(){ wheelCD = false; }, 650);
+    }
+  }, { passive: false });
+
+  // タッチ（スワイプ上=進む / 下=戻る）
+  let touchY = null;
+  intro.addEventListener('touchstart', function(e){ touchY = e.touches[0].clientY; }, { passive: true });
+  intro.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
+  intro.addEventListener('touchend', function(e){
+    if (finished || touchY === null) return;
+    const dy = touchY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 40) { (dy > 0) ? advance() : back(); }
+    touchY = null;
+  }, { passive: true });
+
+  // キーボード（↓/Space=進む, ↑=戻る）
+  window.addEventListener('keydown', function(e){
+    if (finished) return;
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); advance(); }
+    else if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); back(); }
+  });
+
+  // タップ/クリックでも進む
+  stage.addEventListener('click', function(){ advance(); });
+  // スキップ
+  if (skip) skip.addEventListener('click', finish);
+})();
+</script>
+
 </body>
 </html>
