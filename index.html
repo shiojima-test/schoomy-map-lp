@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.9</title>
+<title>SchooMy 活用マップ ｜ v1.10</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -459,6 +459,7 @@ body.schm-intro-lock { overflow: hidden !important; }
     margin: 0 auto 14px;
     display: block;
     filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.18));
+    transition: opacity 0.25s ease; /* v1.10: ロード完了でフェード表示 */
   }
   .schm-modal-name {
     font-weight: 900;
@@ -983,7 +984,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.9</span>
+        <span class="schm-map-version">LP v1.10</span>
       </div>
     </div>
   </div>
@@ -1248,11 +1249,18 @@ body.schm-intro-lock { overflow: hidden !important; }
       // アクセントカラーはキャラの吹き出し色に合わせる
       card.style.setProperty('--schm-modal-color', c.bubble_color || '#3AABA8');
 
-      // キャラ画像
+      // キャラ画像（v1.10: 前の画像が一瞬残るのを防ぐ＝即クリア→ロード完了でフェード表示）
       if (c.image) {
-        imgEl.src = c.image;
-        imgEl.alt = c.name || '';
         imgEl.style.display = 'block';
+        imgEl.alt = c.name || '';
+        imgEl.onload = function(){ imgEl.style.opacity = '1'; };
+        imgEl.onerror = function(){ imgEl.style.opacity = '1'; };
+        if (imgEl.getAttribute('src') !== c.image) {
+          imgEl.style.opacity = '0';   // 別画像に変わる時だけ前画像を隠す
+          imgEl.src = c.image;
+        }
+        // 既にキャッシュ済み(complete)なら即表示してフェード待ちを作らない
+        if (imgEl.complete && imgEl.naturalWidth > 0) { imgEl.style.opacity = '1'; }
       } else {
         imgEl.style.display = 'none';
       }
@@ -1620,6 +1628,8 @@ body.schm-intro-lock { overflow: hidden !important; }
       if (ci < 0) return;
       ghostUsed.add(ci);
       const c = ghostCases[ci];
+      // v1.10: タップ時に即表示できるよう、この事例写真を軽く先読み（最大3体ぶんのみ）
+      if (c.photo) { try { const pre = new Image(); pre.src = c.photo; } catch(e) {} }
       const el = document.createElement('div');
       el.className = 'schm-ghost';
       el.style.left = c.pos_left; el.style.top = c.pos_top;
@@ -1732,7 +1742,7 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.9 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.10 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
      v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
@@ -1742,7 +1752,8 @@ body.schm-intro-lock { overflow: hidden !important; }
      v1.6変更: 進行バーをグラデから“べた塗り4色”に(比率 ティール31/クリーム46/オレンジ8/ブルー15、縦帯画像準拠・色はブランドhex)。じっ76px/男の子96px(スマホは62/80)に縮小。
      v1.7変更: マップ上の事例ピン(センサーアイコン+写真吹き出し)と左下の事例カードを非表示にし、マップはキャラのみに。casesの読み込みは温存（main内の3行を戻せば復活可）。
      v1.8変更: Loadingの「Loading…」テキスト削除。イントロ完了後に「コマリー」紹介モーダルを自動表示(既存モーダル流用・ボタン無し・画像assets/komari.png仮)。openCharModalをwindowに公開しPART INTROから呼ぶ。
-     v1.9変更: コマリーを“オバケ”として元センサー位置(cases)にランダム3体出現。ふわっと出て→浮遊→上にスーッと消え→別位置に再出現。タップで同じモーダル(写真=photo/文章=description/詳しく見る=url)。データは既存casesを流用。 -->
+     v1.9変更: コマリーを“オバケ”として元センサー位置(cases)にランダム3体出現。ふわっと出て→浮遊→上にスーッと消え→別位置に再出現。タップで同じモーダル(写真=photo/文章=description/詳しく見る=url)。データは既存casesを流用。
+     v1.10変更: モーダル画像のラグ対策。別画像に変わる時だけ前画像を即クリア→onloadでフェード表示(キャッシュ済みは即表示)。コマリー出現時にその事例写真を1枚だけ軽く先読み(最大3枚・全件先読みはしない=重くしない)。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
