@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.0</title>
+<title>SchooMy 活用マップ ｜ v1.1</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
-     SchooMy 活用マップ LP v1.0
+     SchooMy 活用マップ LP v1.1
      base: Navigation Overlay v6.0 + Map v3.5
      新機能: キャラクリックでページ内モーダル表示（遷移なし）
      データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
@@ -731,12 +731,16 @@
           -webkit-overflow-scrolling: touch;
           border-radius: 0;
           transform: none;
-          height: 60vh;
-          max-height: 60vh;
+          /* v1.1: カードを消した分、マップを画面全体の高さで表示（横スクロールでワールド全体を見る） */
+          height: 100vh;
+          height: 100dvh;
+          max-height: none;
           width: 100%;
         }
         .schm-map-inner {
-          height: 60vh;
+          /* v1.1: boxと同じく画面全体の高さに */
+          height: 100vh;
+          height: 100dvh;
           width: auto;
           aspect-ratio: 1500 / 804;
           max-height: none;
@@ -749,6 +753,8 @@
         }
 
         .schm-map-panel {
+          /* v1.1: スマホでは事例カードを非表示（マップ＝スクーミーワールドを主役にする） */
+          display: none !important;
           position: relative !important;
           left: auto !important;
           bottom: auto !important;
@@ -856,7 +862,7 @@
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.0</span>
+        <span class="schm-map-version">LP v1.1</span>
       </div>
     </div>
   </div>
@@ -1366,7 +1372,7 @@
         mini.onclick = () => {
           activeCaseIdx = i;
           navIdx = navOrder.indexOf(i);
-          renderCard();
+          renderCard(true);
           resetTimer();
         };
         fetchSvgInline(c.icon).then(svgText => { if(svgText) mini.innerHTML = svgText; }).catch(()=>{});
@@ -1388,7 +1394,7 @@
     } catch (e) { console.warn('[SchooMy Map LP v1.0] renderAnchors error:', e); }
   }
 
-  function renderCard() {
+  function renderCard(userInitiated) {
     try {
       const d = cases[activeCaseIdx];
       if (!d) return;
@@ -1417,14 +1423,16 @@
         fetchSvgInline(d.icon).then(svgText => { if(svgText) cardIcon.innerHTML = svgText; }).catch(()=>{});
       }
 
-      if (window.innerWidth <= 760) {
+      // v1.1: モバイルの横スクロールは「ユーザーがピンをタップした時」だけ。
+      //       自動再生(タイマー)では動かさず、ユーザーの手動スクロールを邪魔しない。
+      if (userInitiated && window.innerWidth <= 760) {
         const box = document.getElementById('schmMapBox');
         if (box) {
           const target = (parseFloat(d.pos_left) / 100 * box.scrollWidth) - (box.offsetWidth / 2);
           box.scrollTo({ left: target, behavior: 'smooth' });
         }
       }
-    } catch (e) { console.warn('[SchooMy Map LP v1.0] renderCard error:', e); }
+    } catch (e) { console.warn('[SchooMy Map LP v1.1] renderCard error:', e); }
   }
 
   function startTimer() {
@@ -1534,6 +1542,8 @@
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.0 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル -->
+<!-- バージョン: LP v1.1 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+     v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
+              横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。 -->
 </body>
 </html>
