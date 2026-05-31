@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.18</title>
+<title>SchooMy 活用マップ ｜ v1.19</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -18,6 +18,7 @@
      v1.16: オバケのモーダル名前欄(オレンジ文字)をcases CSVの「hakken」列に変更（空欄ならtitleにフォールバック／本文LPayashi・写真・詳しく見るは無変更）
      v1.17: LPのみ「フッターナビ(各種申し込み等)」をHTML削除＆「スクーミースポット」キャラを非表示（シート無変更＝TOPは従来どおり）
      v1.18: LPのみ SchooMy Worldロゴを復活（テキストリンクは削除のまま）＆右下oVice(フェスタ)ボタンを削除
+     v1.19: LPmessageだけ入っていてmessage/link_url空のキャラもクリック可能に（パープル博士・キャロットがモーダルを開けるよう、clickable判定にLPmessageを追加）
 ====================================================== -->
 <style>
   html, body {
@@ -969,7 +970,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.18</span>
+        <span class="schm-map-version">LP v1.19</span>
       </div>
     </div>
   </div>
@@ -1424,8 +1425,10 @@ body.schm-intro-lock { overflow: hidden !important; }
 
         const hasLink = c.link_url && c.link_url !== '';
         const hasMessage = c.message && c.message.trim() !== '';
+        const hasLpMessage = c.lp_message && c.lp_message.trim() !== '';
         // v1.0: メッセージ or リンクがあればクリックでモーダル表示。両方無ければ飾り（クリック無効）
-        const clickable = hasMessage || hasLink;
+        // v1.19: LPmessage（モーダル本文）があってもクリック可能に（message空でもモーダルが開く）
+        const clickable = hasMessage || hasLink || hasLpMessage;
 
         const imgWrap = document.createElement('div');
         imgWrap.className = 'schm-char-img-wrap' + (clickable ? '' : ' no-link');
@@ -1887,4 +1890,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.18 / LPのみロゴ復活＋oVice(フェスタ)ボタン削除（TOP無変更） -->
+<!-- SchooMy 活用マップ LP v1.19 / LPmessageのみのキャラもクリック可能に（パープル博士・キャロット対応） -->
