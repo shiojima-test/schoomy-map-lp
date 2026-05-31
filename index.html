@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.4</title>
+<title>SchooMy 活用マップ ｜ v1.5</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -81,19 +81,26 @@ body.schm-intro-lock { overflow: hidden !important; }
   opacity: 0; visibility: hidden; transition: opacity 0.4s ease;
 }
 .schm-intro-loading.is-active { opacity: 1; visibility: visible; }
-.schm-intro-loading-boy { width: 96px; height: auto; display: block; }
+.schm-intro-figure { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.schm-intro-jitsu { width: 116px; height: auto; display: block; }
+.schm-intro-loading-boy { width: 142px; height: auto; display: block; }
+/* v1.5: 白トラックを装飾して目立たせる（影＋枠）。塗りは4色を左→右へ確定進行 */
 .schm-intro-bar {
-  position: relative; width: min(260px, 64vw); height: 12px;
-  border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.30);
+  position: relative; width: min(300px, 74vw); height: 16px;
+  border-radius: 999px; overflow: hidden;
+  background: #ffffff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(0,0,0,0.06);
 }
 .schm-intro-bar-fill {
-  position: absolute; top: 0; left: 0; height: 100%; width: 200%;
-  /* v1.4: ティール→クリーム→オレンジ→ブルーの配色が左から右へ流れる */
-  background: repeating-linear-gradient(90deg,
-    #3AABA8 0 12.5%, #F5E4C4 12.5% 25%, #E88A0A 25% 37.5%, #2E8EC4 37.5% 50%);
-  animation: schmBarFlow 1.4s linear infinite;
+  position: absolute; top: 0; left: 0; height: 100%; width: 0%;
+  /* 4色グラデをトラック幅に固定 → 塗りが伸びるほど左から色が現れる */
+  background-image: linear-gradient(90deg, #3AABA8 0%, #F5E4C4 36%, #E88A0A 68%, #2E8EC4 100%);
+  background-size: min(300px, 74vw) 100%;
+  background-repeat: no-repeat;
+  background-position: left center;
+  border-radius: 999px;
 }
-@keyframes schmBarFlow { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 .schm-intro-loading-text { color: #ffffff; font-weight: 900; font-size: 16px; letter-spacing: 0.1em; }
 </style>
 </head>
@@ -105,8 +112,11 @@ body.schm-intro-lock { overflow: hidden !important; }
   <div class="schm-intro-hint" id="schmIntroHint">スクロールで進む &#8595;</div>
   <button type="button" class="schm-intro-skip" id="schmIntroSkip">スキップ</button>
   <div class="schm-intro-loading" id="schmIntroLoading">
-    <img class="schm-intro-loading-boy" src="assets/intro-boy.png" alt="">
-    <div class="schm-intro-bar"><div class="schm-intro-bar-fill"></div></div>
+    <div class="schm-intro-figure">
+      <img class="schm-intro-jitsu" src="assets/intro-jitsu.png" alt="じっ">
+      <img class="schm-intro-loading-boy" src="assets/intro-boy.png" alt="">
+    </div>
+    <div class="schm-intro-bar"><div class="schm-intro-bar-fill" id="schmIntroBarFill"></div></div>
     <div class="schm-intro-loading-text">Loading&#8230;</div>
   </div>
 </div>
@@ -951,7 +961,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.4</span>
+        <span class="schm-map-version">LP v1.5</span>
       </div>
     </div>
   </div>
@@ -1631,12 +1641,13 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.4 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.5 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
      v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
      v1.3変更: イントロ背景色をキャラの髪のオレンジ #E3AB4A に変更（ブランドオレンジ#E88A0Aはマップ内ボタン等で維持）。
-     v1.4変更: イントロ/Loading背景を壁紙準拠の#E4A334に。Loading画面に後ろ向きの男の子(assets/intro-boy.png)を中央表示し、スピナーを4色(ティール/クリーム/オレンジ/ブルー)の左→右フローバーに変更。 -->
+     v1.4変更: イントロ/Loading背景を壁紙準拠の#E4A334に。Loading画面に後ろ向きの男の子(assets/intro-boy.png)を中央表示し、スピナーを4色(ティール/クリーム/オレンジ/ブルー)の左→右フローバーに変更。
+     v1.5変更: Loadingに「じっ」(assets/intro-jitsu.png)を男の子の上に追加。進行バーを“流れ”から“0→100%の確定進行”に変更(満タン=完了→マップ)。白トラックに影＋枠を付けオレンジ背景でも目立つように。男の子を142pxに。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
@@ -1653,7 +1664,7 @@ body.schm-intro-lock { overflow: hidden !important; }
   ];
   // ★★★ ここまで ★★★
 
-  const LOADING_MS = 1500; // Loading表示の長さ(ms)
+  const LOADING_MS = 1900; // バーが0→100%に進む時間(ms)=Loading完了まで
 
   const intro = document.getElementById('schmIntro');
   if (!intro) return;
@@ -1710,7 +1721,16 @@ body.schm-intro-lock { overflow: hidden !important; }
     if (finished) return; finished = true;
     if (hint) hint.style.display = 'none';
     loading.classList.add('is-active');
-    setTimeout(closeIntro, LOADING_MS);
+    // v1.5: バーを0→100%へ進め、満タンになったら完了→マップへ
+    const fill = document.getElementById('schmIntroBarFill');
+    const start = performance.now();
+    function step(now){
+      const p = Math.min(1, (now - start) / LOADING_MS);
+      if (fill) fill.style.width = (p * 100) + '%';
+      if (p < 1) { requestAnimationFrame(step); }
+      else { closeIntro(); }
+    }
+    requestAnimationFrame(step);
   }
   function closeIntro(){
     intro.classList.add('is-hidden');
