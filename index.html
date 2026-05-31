@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.16</title>
+<title>SchooMy 活用マップ ｜ v1.17</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -16,6 +16,7 @@
      v1.14: イントロ下部に控えめな下向き矢印(↓)だけを表示（白半透明・ふわっと上下・クリック判定なし・最後の画像でLoading移行時に消える）
      v1.15: コマリーのオバケのモーダル本文をcases CSVの「LPayashi」列に変更（空欄ならdescriptionにフォールバック／写真・詳しく見るは無変更／characters側LPmessageとは独立）
      v1.16: オバケのモーダル名前欄(オレンジ文字)をcases CSVの「hakken」列に変更（空欄ならtitleにフォールバック／本文LPayashi・写真・詳しく見るは無変更）
+     v1.17: LPのみ「フッターナビ(各種申し込み等)」をHTML削除＆「スクーミースポット」キャラを非表示（シート無変更＝TOPは従来どおり）
 ====================================================== -->
 <style>
   html, body {
@@ -503,18 +504,7 @@ body.schm-intro-lock { overflow: hidden !important; }
 <!-- ▼▼ ナビ + マップ全体ラッパー ▼▼ -->
 <div class="schoomy-nav-overlay-host">
 
-  <!-- ====== ナビゲーションオーバーレイ（PCのみ） ====== -->
-  <nav class="schoomy-nav-overlay">
-    <a href="https://schoomy.com/" class="schoomy-nav-logo">
-      <img src="https://lh3.googleusercontent.com/d/1JKqVE1mtkxz2bQMi7wRB851-qwLqfZzj" alt="SchooMy">
-    </a>
-    <ul class="schoomy-nav-list">
-      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/festa-entry/form" class="schoomy-nav-link">各種申し込み</a></li>
-      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/inquiry" class="schoomy-nav-link">お問い合わせ</a></li>
-      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/boards/editor" class="schoomy-nav-link">スクーミーボードを使う</a></li>
-      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/" class="schoomy-nav-link">スクーマーズポータルfox.</a></li>
-    </ul>
-  </nav>
+  <!-- ====== ナビゲーションオーバーレイ（PCのみ）: v1.17でLPから削除（各種申し込み等） ====== -->
 
   <!-- ====== oVice誘導ボタン（PC版のみ、右下） ====== -->
   <a class="schoomy-ovice-button" href="https://app.ovice.com/ws/schoomyworld/" target="_blank" rel="noopener noreferrer">
@@ -976,7 +966,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.16</span>
+        <span class="schm-map-version">LP v1.17</span>
       </div>
     </div>
   </div>
@@ -1418,6 +1408,8 @@ body.schm-intro-lock { overflow: hidden !important; }
       wrap.innerHTML = '';
 
       characters.forEach((c, i) => {
+        // v1.17: LPのみ「スクーミースポット」を非表示（シート無変更＝TOPは従来どおり表示）
+        if (c.name && c.name.trim() === 'スクーミースポット') { return; }
         const anchor = document.createElement('div');
         anchor.className = 'schm-char-anchor';
         anchor.style.left = c.pos_left;
@@ -1892,4 +1884,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.16 / オバケのモーダル名前(オレンジ)=cases hakken列対応 -->
+<!-- SchooMy 活用マップ LP v1.17 / LPのみフッターナビ削除＆スクーミースポット非表示（TOP無変更） -->
