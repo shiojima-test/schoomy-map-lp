@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SchooMy 活用マップ ｜ v1.0</title>
+<meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
+<!-- ======================================================
+     SchooMy 活用マップ LP v1.0
+     base: Navigation Overlay v6.0 + Map v3.5
+     新機能: キャラクリックでページ内モーダル表示（遷移なし）
+     データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
+====================================================== -->
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    overflow-x: hidden;
+  }
+  body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+</style>
+</head>
+<body>
+
+<!-- ====================================================== -->
+<!-- SchooMy Map + Navigation Overlay v6.0                  -->
+<!-- v6.0: キャラもclamp連動。サイズ差はCSSカスタムプロパティで保持 -->
+<!-- ====================================================== -->
+
+<style>
+/* =========================================================
+   ナビゲーションオーバーレイ専用CSS（v4.0 ポケモン公式風）
+   ロゴ + メニュー2段構成、Noto Sans JP Bold
+========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap');
+
+.schoomy-nav-overlay-host {
+  position: relative;
+}
+
+.schoomy-nav-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  /* 画面幅に応じて余白も変動 */
+  padding: clamp(16px, 1.4vw, 32px) clamp(24px, 2.5vw, 56px) clamp(12px, 1vw, 24px);
+  box-sizing: border-box;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(8px, 0.7vw, 18px);
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 34, 0.55) 0%,
+    rgba(26, 26, 34, 0.25) 60%,
+    rgba(26, 26, 34, 0) 100%
+  );
+}
+
+/* ロゴエリア */
+.schoomy-nav-overlay .schoomy-nav-logo {
+  display: inline-block;
+  pointer-events: auto;
+  text-decoration: none !important;
+}
+
+.schoomy-nav-overlay .schoomy-nav-logo img {
+  display: block;
+  /* 画面幅に応じて 48px〜96px の範囲で自動調整 */
+  height: clamp(48px, 4.2vw, 96px);
+  width: auto;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  transition: opacity 0.3s ease;
+}
+
+.schoomy-nav-overlay .schoomy-nav-logo:hover img {
+  opacity: 0.85;
+}
+
+/* メニューリスト */
+.schoomy-nav-overlay .schoomy-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* 項目間の間隔も画面幅で変動 */
+  gap: clamp(18px, 1.8vw, 40px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.schoomy-nav-overlay .schoomy-nav-item {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schoomy-nav-overlay .schoomy-nav-link {
+  display: inline-block;
+  position: relative;
+  color: #ffffff !important;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W6", "Meiryo", "メイリオ", sans-serif;
+  /* 画面幅に応じて 12px〜22px の範囲で自動調整 */
+  font-size: clamp(12px, 1vw, 22px);
+  font-weight: 700;
+  text-decoration: none !important;
+  padding: 6px 2px;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 1.2;
+}
+
+.schoomy-nav-overlay .schoomy-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+  transition: width 0.35s ease;
+}
+
+.schoomy-nav-overlay .schoomy-nav-link:hover {
+  opacity: 0.9;
+}
+
+.schoomy-nav-overlay .schoomy-nav-link:hover::after {
+  width: 100%;
+}
+
+/* スマホ版：ロゴだけを中央上に表示 */
+@media screen and (max-width: 959px) {
+  .schoomy-nav-overlay {
+    display: flex;
+    align-items: center;       /* ロゴを中央寄せ */
+    justify-content: center;
+    padding: 12px 16px 8px;
+    gap: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(26, 26, 34, 0.45) 0%,
+      rgba(26, 26, 34, 0.15) 70%,
+      rgba(26, 26, 34, 0) 100%
+    );
+  }
+
+  .schoomy-nav-overlay .schoomy-nav-logo img {
+    height: 44px;
+  }
+
+  /* スマホ時はメニューリストを非表示 */
+  .schoomy-nav-overlay .schoomy-nav-list {
+    display: none;
+  }
+
+  /* v5.4: スマホ時はoVice誘導ボタン（オレンジのアイコン）を非表示 */
+  .schoomy-ovice-button {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   v4.3: 事例カード・キャラのサイズを画面幅で自動スケール
+   PC（960px以上）でのみ適用、スマホは元のサイズ維持
+========================================================= */
+@media screen and (min-width: 960px) {
+  /* 事例カード（左下のスライダー） */
+  .schoomy-nav-overlay-host .schm-map-panel {
+    /* 画面幅に応じて 280px〜440px の範囲で（v4.4で縮小） */
+    width: clamp(280px, 22vw, 440px) !important;
+    left: clamp(56px, 4vw, 96px) !important;
+    bottom: clamp(32px, 2vw, 48px) !important;
+  }
+
+  /* 事例カード内テキスト */
+  .schoomy-nav-overlay-host .schm-map-case-title {
+    font-size: clamp(13px, 1vw, 19px) !important;
+  }
+  .schoomy-nav-overlay-host .schm-map-case-desc {
+    font-size: clamp(10px, 0.75vw, 13px) !important;
+  }
+  .schoomy-nav-overlay-host .schm-map-case-subtitle {
+    font-size: clamp(9px, 0.65vw, 12px) !important;
+  }
+  .schoomy-nav-overlay-host .schm-map-cat {
+    font-size: clamp(8px, 0.55vw, 11px) !important;
+  }
+  .schoomy-nav-overlay-host .schm-map-link {
+    font-size: clamp(10px, 0.75vw, 13px) !important;
+    padding: clamp(7px, 0.55vw, 10px) clamp(14px, 1.2vw, 22px) !important;
+  }
+
+  /* 事例カードのアイコン */
+  .schoomy-nav-overlay-host .schm-map-card-icon {
+    width: clamp(44px, 3.6vw, 70px) !important;
+    height: clamp(44px, 3.6vw, 70px) !important;
+  }
+
+  /* センサーピン（マップ上のミニアイコン） */
+  .schoomy-nav-overlay-host .schm-map-mini-icon {
+    width: clamp(52px, 4.4vw, 88px) !important;
+    height: clamp(52px, 4.4vw, 88px) !important;
+  }
+
+  /* 写真バブル */
+  .schoomy-nav-overlay-host .schm-map-bubble {
+    width: clamp(160px, 13vw, 260px) !important;
+    height: clamp(160px, 13vw, 260px) !important;
+  }
+
+  /* =========================================================
+     v4.8: oVice誘導アイコン（右下、PC版のみ）
+  ========================================================= */
+  .schoomy-ovice-button {
+    position: absolute;
+    right: clamp(32px, 2vw, 48px);
+    bottom: clamp(32px, 2vw, 48px);
+    z-index: 35;
+    display: block;
+    pointer-events: auto;
+    text-decoration: none;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: schoomyOviceBob 3.5s ease-in-out infinite;
+  }
+  .schoomy-ovice-button:hover {
+    transform: translateY(-6px) scale(1.05);
+    animation: none;
+  }
+  .schoomy-ovice-button img {
+    display: block;
+    width: clamp(160px, 14vw, 260px);
+    height: auto;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+  }
+  @keyframes schoomyOviceBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  /* キャラ画像本体：v6.0
+     比率（var(--schm-char-ratio)）× clamp(基準px) で
+     サイズ差を保ちつつ画面幅連動 */
+  .schoomy-nav-overlay-host .schm-char-img-wrap {
+    width: calc(var(--schm-char-ratio, 1) * clamp(36px, 3vw, 60px)) !important;
+    height: calc(var(--schm-char-ratio, 1) * clamp(36px, 3vw, 60px)) !important;
+  }
+
+  /* キャラの吹き出し（メッセージ）— v5.2: paddingは元設計を維持 */
+  .schoomy-nav-overlay-host .schm-char-bubble {
+    font-size: clamp(9px, 0.7vw, 12px) !important;
+    max-width: clamp(110px, 9vw, 160px) !important;
+  }
+}
+</style>
+
+<!-- =========================================================
+     v1.0 新規: キャラクリック用モーダル（ページ内ポップアップ）
+     - 既存デザインと同じ視覚言語（ティール枠・白カード・Noto Sans JP）
+     - 閉じる: ×ボタン / 背景クリック / ESCキー
+========================================================= -->
+<style>
+  .schm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(26, 26, 34, 0.62);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .schm-modal-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .schm-modal-card {
+    position: relative;
+    width: min(460px, 92vw);
+    max-height: 86vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 4px solid var(--schm-modal-color, #3AABA8);
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    padding: 30px 26px 26px;
+    box-sizing: border-box;
+    transform: scale(0.85) translateY(12px);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", "メイリオ", sans-serif;
+    text-align: center;
+    color: #1a1a22;
+  }
+  .schm-modal-overlay.is-open .schm-modal-card {
+    transform: scale(1) translateY(0);
+  }
+  .schm-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(26, 26, 34, 0.08);
+    color: #1a1a22;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    padding: 0;
+  }
+  .schm-modal-close:hover {
+    background: var(--schm-modal-color, #3AABA8);
+    color: #ffffff;
+  }
+  .schm-modal-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin: 0 auto 14px;
+    display: block;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.18));
+  }
+  .schm-modal-name {
+    font-weight: 900;
+    font-size: 15px;
+    color: var(--schm-modal-color, #3AABA8);
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  .schm-modal-message {
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.85;
+    color: #1a1a22;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .schm-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    padding: 13px 30px;
+    background: #E88A0A;
+    color: #ffffff !important;
+    font-weight: 900;
+    font-size: 15px;
+    text-decoration: none;
+    border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transition: 0.25s;
+  }
+  .schm-modal-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+  }
+  @media screen and (max-width: 760px) {
+    .schm-modal-card {
+      padding: 26px 20px 22px;
+      border-width: 3px;
+      border-radius: 18px;
+    }
+    .schm-modal-img { width: 84px; height: 84px; }
+    .schm-modal-message { font-size: 14px; }
+    .schm-modal-btn { font-size: 14px; padding: 12px 26px; }
+  }
+</style>
+
+<!-- ▼▼ ナビ + マップ全体ラッパー ▼▼ -->
+<div class="schoomy-nav-overlay-host">
+
+  <!-- ====== ナビゲーションオーバーレイ（PCのみ） ====== -->
+  <nav class="schoomy-nav-overlay">
+    <a href="https://schoomy.com/" class="schoomy-nav-logo">
+      <img src="https://lh3.googleusercontent.com/d/1JKqVE1mtkxz2bQMi7wRB851-qwLqfZzj" alt="SchooMy">
+    </a>
+    <ul class="schoomy-nav-list">
+      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/festa-entry/form" class="schoomy-nav-link">各種申し込み</a></li>
+      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/inquiry" class="schoomy-nav-link">お問い合わせ</a></li>
+      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/boards/editor" class="schoomy-nav-link">スクーミーボードを使う</a></li>
+      <li class="schoomy-nav-item"><a href="https://fox.schoomy.com/" class="schoomy-nav-link">スクーマーズポータルfox.</a></li>
+    </ul>
+  </nav>
+
+  <!-- ====== oVice誘導ボタン（PC版のみ、右下） ====== -->
+  <a class="schoomy-ovice-button" href="https://app.ovice.com/ws/schoomyworld/" target="_blank" rel="noopener noreferrer">
+    <img src="https://lh3.googleusercontent.com/d/1J3cKdgFO9zrKtZIVMqaOl6tgSvUtGrw9" alt="SchooMy World oVice">
+  </a>
+
+  <!-- ====== ↓↓↓ ここからマップv3.5本体 ↓↓↓ ====== -->
+  <div class="schm-map-root" id="schmMapRoot" data-version="3.5">
+    <style>
+      /* ===== SchooMy Map 専用スコープ v3.5 ===== */
+      .schm-map-root {
+        --schm-teal: #3AABA8;
+        --schm-teal-deep: #2E8E8B;
+        --schm-cream: #F5E4C4;
+        --schm-orange: #E88A0A;
+        --schm-blue: #2E8EC4;
+        --schm-ink: #1a1a22;
+        --schm-bg: #ffffff;
+        --schm-font-jp: "Noto Sans JP", "Meiryo", "メイリオ", sans-serif;
+        --map-scale: 1;
+
+        font-family: var(--schm-font-jp);
+        color: var(--schm-ink);
+        background: var(--schm-bg);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow: visible;
+        border: none !important;
+        outline: none !important;
+      }
+
+      .schm-map-root *, .schm-map-root *::before, .schm-map-root *::after { box-sizing: border-box; }
+
+      .schm-map-stage { position: relative; z-index: 1; width: 100%; }
+
+      .schm-map-box {
+        position: relative;
+        background: #fff;
+        border-radius: 0 !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        overflow: hidden;
+        padding: 0;
+        width: 100%;
+        transform: scale(var(--map-scale, 1));
+        transform-origin: center top;
+        transition: transform 0.3s ease;
+      }
+
+      .schm-map-inner {
+        position: relative;
+        aspect-ratio: 1500 / 804;
+        width: 100%;
+        overflow: hidden;
+        border: none !important;
+        outline: none !important;
+        background: #fff;
+      }
+      .schm-map-img {
+        width: 101%;
+        height: 101%;
+        margin: -0.5%;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 0;
+        display: block;
+        border: none !important;
+        outline: none !important;
+      }
+
+      .schm-map-pin-wrap { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+
+      .schm-map-bubble-anchor { position: absolute; width: 0; height: 0; z-index: 4; pointer-events: none; }
+      .schm-map-bubble-anchor.is-active { z-index: 50; }
+
+      .schm-map-mini-icon {
+        position: absolute; left: 0; top: 0; width: 72px; height: 72px;
+        transform: translate(-50%, -50%); background: #fff;
+        border: 5px solid var(--schm-cream);
+        border-radius: 50%; padding: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        cursor: pointer; pointer-events: auto; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 2; animation: schmMiniBob 3.5s ease-in-out infinite; overflow: hidden;
+      }
+      .schm-map-mini-icon:hover { transform: translate(-50%, -50%) scale(1.1); border-color: var(--schm-orange); }
+
+      .schm-map-bubble-anchor.is-active .schm-map-mini-icon {
+        transform: translate(-50%, -50%) scale(1.1);
+        border-color: var(--schm-orange);
+        animation: none; z-index: 6; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      }
+      @keyframes schmMiniBob { 0%, 100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-6px); } }
+
+      .schm-map-mini-icon svg, .schm-map-card-icon svg { width: 100%; height: 100%; display: block; background: transparent !important; }
+      .schm-map-mini-icon svg .cls-1, .schm-map-card-icon svg .cls-1,
+      .schm-map-mini-icon svg [fill="#ebebeb"], .schm-map-card-icon svg [fill="#ebebeb"],
+      .schm-map-mini-icon svg [fill="#EBEBEB"], .schm-map-card-icon svg [fill="#EBEBEB"],
+      .schm-map-mini-icon svg [id="Background"], .schm-map-card-icon svg [id="Background"] {
+        display: none !important; fill: transparent !important;
+      }
+      .schm-map-mini-icon img, .schm-map-card-icon img { width: 100%; height: 100%; object-fit: contain; background: transparent; }
+
+      .schm-map-pin-dot {
+        position: absolute; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%;
+        background: var(--schm-teal); transform: translate(-50%, -50%) scale(0); opacity: 0; transition: all 0.4s ease; z-index: 3;
+      }
+      .schm-map-bubble-anchor.is-active .schm-map-pin-dot { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: schmPinPulse 1.8s ease-in-out infinite; }
+      @keyframes schmPinPulse {
+        0%, 100% { box-shadow: 0 0 0 8px rgba(58, 171, 168, 0.25), 0 0 20px rgba(58, 171, 168, 0.5); }
+        50% { box-shadow: 0 0 0 14px rgba(58, 171, 168, 0.15), 0 0 26px rgba(58, 171, 168, 0.6); }
+      }
+
+      .schm-map-bubble {
+        position: absolute; width: 210px; height: 210px; background: var(--schm-teal);
+        border: 5px solid #ffffff; border-radius: 24px; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+        padding: 10px; opacity: 0; transform: scale(0.3); transform-origin: var(--schm-origin-x, 0%) var(--schm-origin-y, 0%);
+        transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 4; pointer-events: none;
+      }
+      .schm-map-bubble-anchor.is-active .schm-map-bubble {
+        opacity: 1; transform: scale(1) rotate(var(--schm-rot, -2deg));
+        animation: schmBubbleFloat 4s ease-in-out infinite 0.6s;
+        pointer-events: auto;
+        z-index: 60;
+      }
+      @keyframes schmBubbleFloat { 0%, 100% { transform: scale(1) rotate(var(--schm-rot, -2deg)) translateY(0); } 50% { transform: scale(1) rotate(var(--schm-rot, -2deg)) translateY(-8px); } }
+      .schm-map-bubble img.bubble-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
+
+      .schm-map-bubble-tail, .schm-map-bubble-tail::before { position: absolute; width: 0; height: 0; border-style: solid; }
+      .schm-map-bubble.dir-br .schm-map-bubble-tail, .schm-map-bubble.dir-bl .schm-map-bubble-tail { top: -22px; border-width: 0 16px 22px 16px; border-color: transparent transparent #ffffff transparent; }
+      .schm-map-bubble.dir-br .schm-map-bubble-tail::before, .schm-map-bubble.dir-bl .schm-map-bubble-tail::before { content: ""; top: 5px; left: -11px; border-width: 0 11px 17px 11px; border-color: transparent transparent var(--schm-teal) transparent; }
+      .schm-map-bubble.dir-tr .schm-map-bubble-tail, .schm-map-bubble.dir-tl .schm-map-bubble-tail { bottom: -22px; border-width: 22px 16px 0 16px; border-color: #ffffff transparent transparent transparent; }
+      .schm-map-bubble.dir-tr .schm-map-bubble-tail::before, .schm-map-bubble.dir-tl .schm-map-bubble-tail::before { content: ""; top: -27px; left: -11px; border-width: 17px 11px 0 11px; border-color: var(--schm-teal) transparent transparent transparent; }
+
+      .schm-map-bubble.dir-br { left: -36px; top: 48px; --schm-origin-x: 0%; --schm-origin-y: 0%; }
+      .schm-map-bubble.dir-br .schm-map-bubble-tail { left: 20px; }
+      .schm-map-bubble.dir-bl { left: -174px; top: 48px; --schm-origin-x: 100%; --schm-origin-y: 0%; }
+      .schm-map-bubble.dir-bl .schm-map-bubble-tail { right: 20px; left: auto; }
+      .schm-map-bubble.dir-tr { left: -36px; top: -258px; --schm-origin-x: 0%; --schm-origin-y: 100%; }
+      .schm-map-bubble.dir-tr .schm-map-bubble-tail { left: 20px; }
+      .schm-map-bubble.dir-tl { left: -174px; top: -258px; --schm-origin-x: 100%; --schm-origin-y: 100%; }
+      .schm-map-bubble.dir-tl .schm-map-bubble-tail { right: 20px; left: auto; }
+
+      .schm-char-wrap { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+      .schm-char-anchor { position: absolute; width: 0; height: 0; pointer-events: none; }
+
+      .schm-char-img-wrap {
+        position: absolute; left: 0; top: 0;
+        width: var(--schm-char-size, 70px);
+        height: var(--schm-char-size, 70px);
+        transform: translate(-50%, -50%);
+        pointer-events: auto;
+        cursor: pointer;
+        z-index: 1;
+      }
+      .schm-char-img-wrap.no-link { cursor: default; }
+      .schm-char-img-wrap img {
+        width: 100%; height: 100%; object-fit: contain;
+        filter: drop-shadow(0 5px 8px rgba(0,0,0,0.25));
+        pointer-events: none;
+      }
+
+      .schm-char-bubble {
+        position: absolute;
+        background: #ffffff;
+        border: 2.5px solid var(--schm-bubble-color, #3AABA8);
+        border-radius: 16px;
+        padding: 9px 13px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        font-size: 12.5px;
+        font-weight: 700;
+        line-height: 1.5;
+        color: var(--schm-ink);
+        max-width: 180px;
+        min-width: 100px;
+        width: max-content;
+        opacity: 0;
+        transform: scale(0.4);
+        transform-origin: var(--schm-char-origin-x, 0%) var(--schm-char-origin-y, 100%);
+        transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+        cursor: pointer;
+        z-index: 2;
+        white-space: normal;
+        word-break: break-word;
+      }
+      .schm-char-bubble.is-visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+      .schm-char-bubble.no-link { cursor: default; }
+      .schm-char-bubble:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22); }
+
+      .schm-char-bubble-tail, .schm-char-bubble-tail::before {
+        position: absolute; width: 0; height: 0; border-style: solid;
+      }
+      .schm-char-bubble.dir-br {
+        left: calc(var(--schm-char-size, 70px) * 0.5 + 4px);
+        top: 0px;
+        --schm-char-origin-x: 0%; --schm-char-origin-y: 0%;
+      }
+      .schm-char-bubble.dir-br .schm-char-bubble-tail {
+        top: 14px; left: -13px;
+        border-width: 7px 13px 7px 0;
+        border-color: transparent var(--schm-bubble-color, #3AABA8) transparent transparent;
+      }
+      .schm-char-bubble.dir-br .schm-char-bubble-tail::before {
+        content: ""; top: -7px; left: 4px;
+        border-width: 7px 11px 7px 0;
+        border-color: transparent #ffffff transparent transparent;
+      }
+      .schm-char-bubble.dir-bl {
+        right: calc(var(--schm-char-size, 70px) * 0.5 + 4px);
+        top: 0px;
+        --schm-char-origin-x: 100%; --schm-char-origin-y: 0%;
+      }
+      .schm-char-bubble.dir-bl .schm-char-bubble-tail {
+        top: 14px; right: -13px;
+        border-width: 7px 0 7px 13px;
+        border-color: transparent transparent transparent var(--schm-bubble-color, #3AABA8);
+      }
+      .schm-char-bubble.dir-bl .schm-char-bubble-tail::before {
+        content: ""; top: -7px; right: 4px;
+        border-width: 7px 0 7px 11px;
+        border-color: transparent transparent transparent #ffffff;
+      }
+      .schm-char-bubble.dir-tr {
+        left: calc(var(--schm-char-size, 70px) * 0.5 + 4px);
+        bottom: 0px;
+        --schm-char-origin-x: 0%; --schm-char-origin-y: 100%;
+      }
+      .schm-char-bubble.dir-tr .schm-char-bubble-tail {
+        bottom: 14px; left: -13px;
+        border-width: 7px 13px 7px 0;
+        border-color: transparent var(--schm-bubble-color, #3AABA8) transparent transparent;
+      }
+      .schm-char-bubble.dir-tr .schm-char-bubble-tail::before {
+        content: ""; top: -7px; left: 4px;
+        border-width: 7px 11px 7px 0;
+        border-color: transparent #ffffff transparent transparent;
+      }
+      .schm-char-bubble.dir-tl {
+        right: calc(var(--schm-char-size, 70px) * 0.5 + 4px);
+        bottom: 0px;
+        --schm-char-origin-x: 100%; --schm-char-origin-y: 100%;
+      }
+      .schm-char-bubble.dir-tl .schm-char-bubble-tail {
+        bottom: 14px; right: -13px;
+        border-width: 7px 0 7px 13px;
+        border-color: transparent transparent transparent var(--schm-bubble-color, #3AABA8);
+      }
+      .schm-char-bubble.dir-tl .schm-char-bubble-tail::before {
+        content: ""; top: -7px; right: 4px;
+        border-width: 7px 0 7px 11px;
+        border-color: transparent transparent transparent #ffffff;
+      }
+
+      .schm-map-panel {
+        position: absolute; left: 32px; bottom: 32px; width: 540px; max-width: calc(100% - 64px);
+        background: var(--schm-teal); color: #fff !important; border-radius: 22px; overflow: hidden;
+        display: flex; flex-direction: column;
+        z-index: 30;
+        box-shadow: 0 32px 72px rgba(0, 0, 0, 0.28);
+      }
+      .schm-map-progress-bar { position: absolute; top: 0; left: 0; height: 3px; background: rgba(0, 0, 0, 0.15); width: 100%; z-index: 20; }
+      .schm-map-progress-fill { height: 100%; background: var(--schm-cream); width: 0%; transition: width 0.1s linear; }
+
+      .schm-map-hero { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; }
+      .schm-map-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+      .schm-map-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(58, 171, 168, 0.1) 0%, rgba(26, 26, 34, 0.9) 100%); z-index: 1; }
+
+      .schm-map-card-icon {
+        position: absolute; bottom: 14px; right: 14px; width: 78px; height: 78px;
+        background: #fff; border-radius: 50%;
+        border: 4px solid var(--schm-cream);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 5; padding: 12px;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+      }
+
+      .schm-map-panel-top { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; z-index: 3; }
+      .schm-map-counter { font-weight: 900; font-size: 13px; color: #fff; background: rgba(26, 26, 34, 0.6); padding: 6px 13px; border-radius: 999px; }
+
+      .schm-map-controls { display: flex; align-items: center; gap: 6px; }
+      .schm-map-ctrl-btn {
+        width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.5);
+        background: rgba(26, 26, 34, 0.5); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding:0;
+      }
+      .schm-map-ctrl-btn:hover { background: #fff; color: var(--schm-teal); }
+
+      .schm-map-hero-text { position: absolute; left: 22px; right: 102px; bottom: 16px; z-index: 3; display: flex; flex-direction: column; gap: 7px; }
+      .schm-map-cat { font-weight: 900; font-size: 11px; color: var(--schm-teal); background: #fff; padding: 5px 12px; border-radius: 999px; align-self: flex-start; }
+      .schm-map-case-subtitle { font-weight: 900; font-size: 12px; color: var(--schm-cream); text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); }
+      .schm-map-case-title { font-weight: 900; font-size: clamp(19px, 1.6vw, 24px); color: #fff; margin: 0; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); line-height:1.3; }
+
+      .schm-map-body { padding: 18px 24px 22px; background: var(--schm-teal); display: flex; flex-direction: column; gap: 13px; position: relative; }
+      .schm-map-case-desc { font-size: 14.5px; font-weight: 700; line-height: 1.7; color: #fff; margin: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+      .schm-map-link { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--schm-orange); color: #fff !important; font-weight: 900; font-size: 14.5px; text-decoration: none; border-radius: 999px; transition: 0.25s; align-self: flex-end; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; }
+      .schm-map-link:hover { background: #fff; color: var(--schm-teal) !important; transform: translateY(-2px); }
+
+      .schm-map-loading { padding: 40px; text-align: center; color: #fff; font-weight: 700; }
+
+      .schm-map-version {
+        position: absolute; bottom: 4px; right: 16px;
+        font-size: 10px; color: rgba(255,255,255,0.6); z-index: 50;
+        pointer-events: none;
+      }
+
+      @media (max-width: 760px) {
+        .schm-map-root { padding: 0; --map-scale: 1; }
+
+        .schm-map-stage {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          position: relative;
+          width: 100%;
+        }
+
+        .schm-map-box {
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          border-radius: 0;
+          transform: none;
+          height: 60vh;
+          max-height: 60vh;
+          width: 100%;
+        }
+        .schm-map-inner {
+          height: 60vh;
+          width: auto;
+          aspect-ratio: 1500 / 804;
+          max-height: none;
+        }
+        .schm-map-img {
+          object-fit: contain;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+        }
+
+        .schm-map-panel {
+          position: relative !important;
+          left: auto !important;
+          bottom: auto !important;
+          top: auto !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          border-radius: 0;
+          box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+          z-index: 10;
+          flex-shrink: 0;
+        }
+
+        .schm-map-mini-icon { width: 52px; height: 52px; padding: 7px; }
+        .schm-map-bubble { width: 160px; height: 160px; }
+
+        .schm-char-img-wrap {
+          width: calc(var(--schm-char-size, 70px) * 0.55);
+          height: calc(var(--schm-char-size, 70px) * 0.55);
+        }
+        .schm-char-bubble {
+          font-size: 10.5px;
+          padding: 6px 9px;
+          max-width: 130px;
+          min-width: 70px;
+          border-width: 2px;
+          border-radius: 12px;
+        }
+        .schm-char-bubble.dir-br { left: calc(var(--schm-char-size, 70px) * 0.275 + 3px); }
+        .schm-char-bubble.dir-bl { right: calc(var(--schm-char-size, 70px) * 0.275 + 3px); }
+        .schm-char-bubble.dir-tr { left: calc(var(--schm-char-size, 70px) * 0.275 + 3px); }
+        .schm-char-bubble.dir-tl { right: calc(var(--schm-char-size, 70px) * 0.275 + 3px); }
+
+        .schm-char-bubble.dir-br .schm-char-bubble-tail,
+        .schm-char-bubble.dir-tr .schm-char-bubble-tail {
+          border-width: 6px 11px 6px 0;
+        }
+        .schm-char-bubble.dir-bl .schm-char-bubble-tail,
+        .schm-char-bubble.dir-tl .schm-char-bubble-tail {
+          border-width: 6px 0 6px 11px;
+        }
+        .schm-char-bubble.dir-br .schm-char-bubble-tail { top: 11px; left: -11px; }
+        .schm-char-bubble.dir-bl .schm-char-bubble-tail { top: 11px; right: -11px; }
+        .schm-char-bubble.dir-tr .schm-char-bubble-tail { bottom: 11px; left: -11px; }
+        .schm-char-bubble.dir-tl .schm-char-bubble-tail { bottom: 11px; right: -11px; }
+
+        .schm-char-bubble.dir-br .schm-char-bubble-tail::before {
+          top: -6px; left: 3px;
+          border-width: 6px 9px 6px 0;
+        }
+        .schm-char-bubble.dir-bl .schm-char-bubble-tail::before {
+          top: -6px; right: 3px;
+          border-width: 6px 0 6px 9px;
+        }
+        .schm-char-bubble.dir-tr .schm-char-bubble-tail::before {
+          top: -6px; left: 3px;
+          border-width: 6px 9px 6px 0;
+        }
+        .schm-char-bubble.dir-tl .schm-char-bubble-tail::before {
+          top: -6px; right: 3px;
+          border-width: 6px 0 6px 9px;
+        }
+      }
+    </style>
+
+    <div class="schm-map-stage">
+      <div class="schm-map-box" id="schmMapBox">
+        <div class="schm-map-inner">
+          <img src="https://drive.google.com/thumbnail?id=1-NxqjE6I_GNNJzkDXYjkAXMKBZ_1aaPl&amp;sz=w1600" alt="スクーミー活用マップ" class="schm-map-img">
+          <div class="schm-char-wrap" id="schmCharWrap"></div>
+          <div class="schm-map-pin-wrap" id="schmMapPinWrap"></div>
+        </div>
+        <aside class="schm-map-panel" id="schmMapPanel">
+          <div class="schm-map-progress-bar"><div class="schm-map-progress-fill" id="schmMapProgressFill"></div></div>
+          <div class="schm-map-loading" id="schmMapLoading">読み込み中...</div>
+          <div style="display:none; flex-direction:column;" id="schmMapReady">
+            <div class="schm-map-hero">
+              <img class="schm-map-hero-img" id="schmMapHeroImg" src="" alt="">
+              <div class="schm-map-hero-overlay"></div>
+              <div class="schm-map-card-icon" id="schmMapCardIcon"></div>
+              <div class="schm-map-panel-top">
+                <div class="schm-map-counter"><span id="schmMapCounterCur">01</span> / <span id="schmMapCounterTot">07</span></div>
+                <div class="schm-map-controls">
+                  <button class="schm-map-ctrl-btn" id="schmMapPrevBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  </button>
+                  <button class="schm-map-ctrl-btn" id="schmMapPlayBtn">
+                    <svg id="schmMapPauseIcon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    <svg id="schmMapPlayIcon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="6,4 20,12 6,20"></polygon></svg>
+                  </button>
+                  <button class="schm-map-ctrl-btn" id="schmMapNextBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="schm-map-hero-text">
+                <span class="schm-map-cat" id="schmMapCaseCat">—</span>
+                <div class="schm-map-case-subtitle" id="schmMapCaseSubtitle">—</div>
+                <h3 class="schm-map-case-title" id="schmMapCaseTitle">—</h3>
+              </div>
+            </div>
+            <div class="schm-map-body">
+              <p class="schm-map-case-desc" id="schmMapCaseDesc">—</p>
+              <a class="schm-map-link" id="schmMapCaseLink" href="#" target="_blank" rel="noopener noreferrer">詳しく見る</a>
+            </div>
+          </div>
+        </aside>
+        <span class="schm-map-version">LP v1.0</span>
+      </div>
+    </div>
+  </div>
+  <!-- ====== ↑↑↑ ここまでマップv3.5本体 ↑↑↑ ====== -->
+
+</div>
+<!-- ▲▲ ナビ + マップ全体ラッパー終了 ▲▲ -->
+
+<!-- ====== v1.0 キャラクリック用モーダル本体 ====== -->
+<div class="schm-modal-overlay" id="schmCharModal" aria-hidden="true">
+  <div class="schm-modal-card" id="schmCharModalCard" role="dialog" aria-modal="true" aria-labelledby="schmCharModalName">
+    <button type="button" class="schm-modal-close" id="schmCharModalClose" aria-label="閉じる">&times;</button>
+    <img class="schm-modal-img" id="schmCharModalImg" src="" alt="" style="display:none;">
+    <div class="schm-modal-name" id="schmCharModalName" style="display:none;"></div>
+    <div class="schm-modal-message" id="schmCharModalMessage"></div>
+    <a class="schm-modal-btn" id="schmCharModalBtn" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">詳しく見る</a>
+  </div>
+</div>
+
+<script>
+/* PART B: SchooMy Map v3.5 メインスクリプト（LP v1.0：キャラクリックをモーダル表示に変更） */
+(function(){
+  'use strict';
+  const CASES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSs69yiq4jRIO29qe791ZpIfuH7qgo3WEiDxuXGz9yS4DcIp1rZpmRPF8fzEeegdHmf7ElTbVGlz4S6/pub?output=csv';
+  const SENSORS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHkTphR2g9EaK_vs2jI6bv-RQ0Co7STxgecxjtHjOzdv2ep59sbIGjyMzMPR-UCFSa1v44_OlUf6QM/pub?output=csv';
+  const CHARACTERS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSs69yiq4jRIO29qe791ZpIfuH7qgo3WEiDxuXGz9yS4DcIp1rZpmRPF8fzEeegdHmf7ElTbVGlz4S6/pub?gid=1783658194&single=true&output=csv';
+  const INTERVAL = 5000;
+
+  const CHAR_BUBBLE_SHOW_MIN = 4000;
+  const CHAR_BUBBLE_SHOW_MAX = 7000;
+  const CHAR_BUBBLE_HIDE_MIN = 8000;
+  const CHAR_BUBBLE_HIDE_MAX = 15000;
+  const CHAR_BUBBLE_INITIAL_DELAY_MAX = 4000;
+
+  const CHAR_SIZE_MAP = {
+    '小': 50, '中': 70, '大': 90, '特大': 120,
+    'small': 50, 'medium': 70, 'large': 90, 'xlarge': 120
+  };
+  const CHAR_SIZE_DEFAULT = 70;
+
+  const BUBBLE_COLOR_MAP = {
+    'ティール': '#3AABA8', 'オレンジ': '#E88A0A', 'ブルー': '#2E8EC4',
+    'ピンク': '#E85A8A', 'グリーン': '#5AC85A', 'パープル': '#9B5AC8', 'ダークグレー': '#333839',
+    'teal': '#3AABA8', 'orange': '#E88A0A', 'blue': '#2E8EC4',
+    'pink': '#E85A8A', 'green': '#5AC85A', 'purple': '#9B5AC8', 'darkgray': '#333839'
+  };
+  const BUBBLE_COLOR_DEFAULT = '#3AABA8';
+
+  function adjustCardPosition() {
+    try {
+      const box = document.getElementById('schmMapBox');
+      const panel = document.getElementById('schmMapPanel');
+      if (!box || !panel) return;
+      const stage = box.parentElement;
+      if (!stage) return;
+      const isMobile = window.innerWidth <= 760;
+      if (isMobile) {
+        if (panel.parentElement !== stage) stage.appendChild(panel);
+      } else {
+        if (panel.parentElement !== box) box.appendChild(panel);
+      }
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] adjustCardPosition error:', e); }
+  }
+
+  function applyScale() {
+    try {
+      const root = document.getElementById('schmMapRoot');
+      const box = document.getElementById('schmMapBox');
+      if (!root || !box) return;
+      if (window.innerWidth <= 760) {
+        root.style.setProperty('--map-scale', 1);
+        root.style.marginBottom = '';
+        return;
+      }
+      root.style.setProperty('--map-scale', 1);
+      void box.offsetWidth;
+      const naturalWidth = box.offsetWidth;
+      const viewportWidth = window.innerWidth;
+      if (naturalWidth <= 0) return;
+      const scale = (viewportWidth / naturalWidth) * 1.005;
+      if (scale <= 1.001) {
+        root.style.setProperty('--map-scale', 1);
+        root.style.marginBottom = '';
+        return;
+      }
+      root.style.setProperty('--map-scale', scale);
+      const naturalHeight = box.offsetHeight;
+      const extraHeight = naturalHeight * (scale - 1);
+      root.style.marginBottom = extraHeight + 'px';
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] applyScale error:', e); }
+  }
+
+  function setupLayout() {
+    try {
+      adjustCardPosition();
+      applyScale();
+      window.addEventListener('load', function() {
+        try { adjustCardPosition(); applyScale(); } catch (e) {}
+      });
+      let resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+          try { adjustCardPosition(); applyScale(); } catch (e) {}
+        }, 100);
+      });
+      setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 100);
+      setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 500);
+      setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 1500);
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] setupLayout error:', e); }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupLayout);
+  } else {
+    setupLayout();
+  }
+
+  function normalizeDriveUrl(url) {
+    if (!url) return '';
+    const s = String(url).trim();
+    const m = s.match(/[?&]id=([a-zA-Z0-9_-]+)/) || s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w2400' : s;
+  }
+
+  function normalizeIconUrl(url) {
+    if (!url) return '';
+    const s = String(url).trim();
+    const m = s.match(/[?&]id=([a-zA-Z0-9_-]+)/) || s.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : s;
+  }
+
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], field = '', inQuote = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuote) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuote = false; } else field += c;
+      } else {
+        if (c === '"') inQuote = true;
+        else if (c === ',') { row.push(field); field = ''; }
+        else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+        else if (c !== '\r') field += c;
+      }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function csvToObjects(csvText) {
+    const rows = parseCSV(csvText).filter(r => r.some(c => c.trim() !== ''));
+    if (rows.length < 2) return [];
+    const header = rows[0].map(h => h.trim().replace(/^\ufeff/, ''));
+    return rows.slice(1).map(r => {
+      const obj = {};
+      header.forEach((h, i) => obj[h] = (r[i] || '').trim());
+      return obj;
+    });
+  }
+
+  function shuffle(array) {
+    const a = [...array];
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function isActiveValue(v) {
+    if (v === undefined || v === null) return false;
+    const s = String(v).trim().toLowerCase();
+    if (s === '') return false;
+    return ['true', '1', 'yes', 'y', 'on', '✓', '○'].includes(s);
+  }
+
+  function isValidPosValue(v) {
+    if (!v) return false;
+    const s = String(v).trim();
+    return /^-?\d+(\.\d+)?%?$/.test(s);
+  }
+
+  function resolveCharSize(v) {
+    if (!v) return CHAR_SIZE_DEFAULT;
+    const s = String(v).trim();
+    if (CHAR_SIZE_MAP[s] !== undefined) return CHAR_SIZE_MAP[s];
+    if (CHAR_SIZE_MAP[s.toLowerCase()] !== undefined) return CHAR_SIZE_MAP[s.toLowerCase()];
+    const numMatch = s.match(/^(\d+)(?:px)?$/);
+    if (numMatch) {
+      const n = parseInt(numMatch[1], 10);
+      if (n >= 20 && n <= 300) return n;
+    }
+    return CHAR_SIZE_DEFAULT;
+  }
+
+  function resolveBubbleColor(v) {
+    if (!v) return BUBBLE_COLOR_DEFAULT;
+    const s = String(v).trim();
+    if (BUBBLE_COLOR_MAP[s] !== undefined) return BUBBLE_COLOR_MAP[s];
+    if (BUBBLE_COLOR_MAP[s.toLowerCase()] !== undefined) return BUBBLE_COLOR_MAP[s.toLowerCase()];
+    if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+    if (/^#[0-9a-fA-F]{3}$/.test(s)) return s;
+    return BUBBLE_COLOR_DEFAULT;
+  }
+
+  const svgCache = new Map();
+  const GRAY_FILLS = new Set(['#ebebeb','#EBEBEB','#eee','#EEE','#eeeeee','#EEEEEE','#f0f0f0','#F0F0F0','#e5e5e5','#E5E5E5','#dddddd','#DDDDDD','#ddd','#DDD','#cccccc','#CCCCCC','#ccc','#CCC','#d3d3d3','#D3D3D3','#e0e0e0','#E0E0E0']);
+
+  function sanitizeSvgText(text) {
+    if(!text || !text.includes('<svg')) return null;
+    text = text.replace(/<g\s+[^>]*id=["'](Background|background|BG|bg|spec)["'][^>]*>[\s\S]*?<\/g>/gi, '');
+    text = text.replace(/\.cls-1\s*\{[^}]*\}/gi, (m) => {
+      for(const g of GRAY_FILLS) { if(m.toLowerCase().includes(g.toLowerCase())) return '.cls-1{fill:transparent;}'; }
+      return m;
+    });
+    text = text.replace(/(<svg[^>]*>\s*)<rect\b[^>]*\bfill=["']([^"']+)["'][^>]*\/?>\s*/i, (full, head, fillVal) => {
+      if(GRAY_FILLS.has(fillVal) || GRAY_FILLS.has(fillVal.toLowerCase())) return head;
+      return full;
+    });
+    return text;
+  }
+
+  async function fetchSvgInline(url) {
+    if(svgCache.has(url)) return svgCache.get(url);
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const cleaned = sanitizeSvgText(text);
+      svgCache.set(url, cleaned);
+      return cleaned;
+    } catch(e) { return null; }
+  }
+
+  let cases = [];
+  let navOrder = [];
+  let navIdx = 0;
+  let activeCaseIdx = 0;
+  let autoplay = true;
+  let timer = null;
+
+  let characters = [];
+  const charBubbleTimers = [];
+
+  /* =========================================================
+     v1.0 新規: キャラクリック用モーダル制御
+  ========================================================= */
+  function openCharModal(c) {
+    try {
+      const overlay = document.getElementById('schmCharModal');
+      const card = document.getElementById('schmCharModalCard');
+      const imgEl = document.getElementById('schmCharModalImg');
+      const nameEl = document.getElementById('schmCharModalName');
+      const msgEl = document.getElementById('schmCharModalMessage');
+      const btnEl = document.getElementById('schmCharModalBtn');
+      if (!overlay || !card) return;
+
+      // アクセントカラーはキャラの吹き出し色に合わせる
+      card.style.setProperty('--schm-modal-color', c.bubble_color || '#3AABA8');
+
+      // キャラ画像
+      if (c.image) {
+        imgEl.src = c.image;
+        imgEl.alt = c.name || '';
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+      }
+
+      // 名前
+      if (c.name && c.name.trim() !== '') {
+        nameEl.textContent = c.name;
+        nameEl.style.display = 'block';
+      } else {
+        nameEl.style.display = 'none';
+      }
+
+      // メッセージ
+      msgEl.textContent = (c.message && c.message.trim() !== '') ? c.message : '';
+
+      // === 将来拡張ポイント =========================================
+      //   スプシに新列 popup_title / popup_body / popup_image / popup_button
+      //   を足したら、ここで読み込んで上書きするだけでリッチ化できる。
+      //   （列を足すまでは既存のmessage / link_urlだけで動作する）
+      //   例:
+      //   if (c.popup_title) { nameEl.textContent = c.popup_title; nameEl.style.display='block'; }
+      //   if (c.popup_body)  { msgEl.textContent = c.popup_body; }
+      //   if (c.popup_image) { imgEl.src = c.popup_image; imgEl.style.display='block'; }
+      // ============================================================
+
+      // 「詳しく見る」ボタン（link_urlがある時だけ）
+      if (c.link_url && c.link_url !== '') {
+        btnEl.href = c.link_url;
+        btnEl.style.display = 'inline-flex';
+      } else {
+        btnEl.style.display = 'none';
+      }
+
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] openCharModal error:', e); }
+  }
+
+  function closeCharModal() {
+    try {
+      const overlay = document.getElementById('schmCharModal');
+      if (!overlay) return;
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] closeCharModal error:', e); }
+  }
+
+  // モーダルの閉じる操作（×ボタン / 背景クリック / ESC）
+  (function setupModalClose() {
+    const overlay = document.getElementById('schmCharModal');
+    const closeBtn = document.getElementById('schmCharModalClose');
+    if (closeBtn) closeBtn.addEventListener('click', closeCharModal);
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeCharModal(); // 背景クリックのみ閉じる（カード内は無視）
+      });
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeCharModal();
+    });
+  })();
+
+  async function main() {
+    try {
+      const [cRes, sRes] = await Promise.all([fetch(CASES_CSV_URL), fetch(SENSORS_CSV_URL)]);
+      const cData = csvToObjects(await cRes.text());
+      const sData = csvToObjects(await sRes.text());
+
+      const sensorMap = {};
+      sData.forEach(s => { if(s.name && s.icon_url) sensorMap[s.name.trim()] = normalizeIconUrl(s.icon_url); });
+
+      cases = cData.map(r => {
+        const tagName = (r.tag1 || '').trim();
+        let iconUrl = sensorMap[tagName] || '';
+        if(!iconUrl) { for(let name in sensorMap) { if(tagName.includes(name) || name.includes(tagName)) { iconUrl = sensorMap[name]; break; } } }
+        return {
+          pos_left: r.pos_left || '50%', pos_top: r.pos_top || '50%',
+          category: r.category, subtitle: r.subtitle, title: r.title, description: r.description,
+          photo: normalizeDriveUrl(r.photo_url || r.url),
+          icon: iconUrl || normalizeDriveUrl(r.photo_url || r.url),
+          url: r.url || ''
+        };
+      });
+
+      const indices = [...Array(cases.length).keys()];
+      navOrder = shuffle(indices);
+      activeCaseIdx = navOrder[0];
+
+      const totEl = document.getElementById('schmMapCounterTot');
+      const loadingEl = document.getElementById('schmMapLoading');
+      const readyEl = document.getElementById('schmMapReady');
+      if (totEl) totEl.textContent = String(cases.length).padStart(2, '0');
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (readyEl) readyEl.style.display = 'flex';
+
+      renderAnchors();
+      renderCard();
+      if (autoplay) startTimer();
+
+      loadCharacters().catch(e => console.warn('[SchooMy Map LP v1.0] characters load error:', e));
+
+      setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 50);
+    } catch (e) { console.error('[SchooMy Map LP v1.0] main error:', e); }
+  }
+
+  async function loadCharacters() {
+    try {
+      const res = await fetch(CHARACTERS_CSV_URL);
+      const text = await res.text();
+      const data = csvToObjects(text);
+      if (data.length === 0) return;
+
+      characters = data
+        .filter(r => isActiveValue(r.active))
+        .filter(r => (r.image_url || '').trim() !== '')
+        .filter(r => isValidPosValue(r.pos_left) && isValidPosValue(r.pos_top))
+        .map(r => ({
+          name: r.name || '',
+          image: normalizeIconUrl(r.image_url),
+          pos_left: r.pos_left || '50%',
+          pos_top: r.pos_top || '50%',
+          message: r.message || '',
+          link_url: r.link_url || '',
+          bubble_dir: (r.bubble_dir || '').trim().toLowerCase(),
+          size: resolveCharSize(r.size),
+          bubble_color: resolveBubbleColor(r.bubble_color)
+        }));
+
+      renderCharacters();
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] loadCharacters error:', e); }
+  }
+
+  function decideBubbleDir(posLeft, posTop, override) {
+    if (override && ['br','bl','tr','tl'].includes(override)) return override;
+    const x = parseFloat(posLeft) || 50;
+    const y = parseFloat(posTop) || 50;
+    const horiz = x < 60 ? 'r' : 'l';
+    const vert = y < 50 ? 'b' : 't';
+    return vert + horiz;
+  }
+
+  function renderCharacters() {
+    try {
+      const wrap = document.getElementById('schmCharWrap');
+      if (!wrap) return;
+
+      charBubbleTimers.forEach(t => {
+        if (t.showTimeout) clearTimeout(t.showTimeout);
+        if (t.hideTimeout) clearTimeout(t.hideTimeout);
+      });
+      charBubbleTimers.length = 0;
+      wrap.innerHTML = '';
+
+      characters.forEach((c, i) => {
+        const anchor = document.createElement('div');
+        anchor.className = 'schm-char-anchor';
+        anchor.style.left = c.pos_left;
+        anchor.style.top = c.pos_top;
+        anchor.style.setProperty('--schm-char-size', c.size + 'px');
+        // v6.0: キャラサイズの比率（中=70pxを1.0として）も設定。clamp連動で使う
+        anchor.style.setProperty('--schm-char-ratio', (c.size / 70).toString());
+        anchor.style.setProperty('--schm-bubble-color', c.bubble_color);
+
+        const hasLink = c.link_url && c.link_url !== '';
+        const hasMessage = c.message && c.message.trim() !== '';
+        // v1.0: メッセージ or リンクがあればクリックでモーダル表示。両方無ければ飾り（クリック無効）
+        const clickable = hasMessage || hasLink;
+
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'schm-char-img-wrap' + (clickable ? '' : ' no-link');
+        const img = document.createElement('img');
+        img.src = c.image;
+        img.alt = c.name || 'character';
+        img.draggable = false;
+        imgWrap.appendChild(img);
+
+        // v1.0: window.open廃止 → ページ内モーダルを開く
+        if (clickable) {
+          imgWrap.addEventListener('click', () => openCharModal(c));
+        }
+
+        anchor.appendChild(imgWrap);
+
+        if (hasMessage) {
+          const dir = decideBubbleDir(c.pos_left, c.pos_top, c.bubble_dir);
+          const bubble = document.createElement('div');
+          bubble.className = 'schm-char-bubble dir-' + dir + (clickable ? '' : ' no-link');
+          bubble.textContent = c.message;
+
+          const tail = document.createElement('div');
+          tail.className = 'schm-char-bubble-tail';
+          bubble.appendChild(tail);
+
+          // v1.0: 吹き出しクリックでもモーダルを開く
+          if (clickable) {
+            bubble.addEventListener('click', () => openCharModal(c));
+          }
+
+          anchor.appendChild(bubble);
+
+          const timerSet = { showTimeout: null, hideTimeout: null };
+          charBubbleTimers.push(timerSet);
+
+          const startCycle = () => {
+            bubble.classList.add('is-visible');
+            const showDuration = randInt(CHAR_BUBBLE_SHOW_MIN, CHAR_BUBBLE_SHOW_MAX);
+            timerSet.hideTimeout = setTimeout(() => {
+              bubble.classList.remove('is-visible');
+              const hideDuration = randInt(CHAR_BUBBLE_HIDE_MIN, CHAR_BUBBLE_HIDE_MAX);
+              timerSet.showTimeout = setTimeout(startCycle, hideDuration);
+            }, showDuration);
+          };
+
+          const initialDelay = randInt(0, CHAR_BUBBLE_INITIAL_DELAY_MAX);
+          timerSet.showTimeout = setTimeout(startCycle, initialDelay);
+        }
+
+        wrap.appendChild(anchor);
+      });
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] renderCharacters error:', e); }
+  }
+
+  function renderAnchors() {
+    try {
+      const wrap = document.getElementById('schmMapPinWrap');
+      if (!wrap) return;
+      wrap.innerHTML = '';
+      cases.forEach((c, i) => {
+        const anchor = document.createElement('div');
+        anchor.className = 'schm-map-bubble-anchor';
+        anchor.style.left = c.pos_left; anchor.style.top = c.pos_top;
+
+        const mini = document.createElement('div');
+        mini.className = 'schm-map-mini-icon';
+        mini.innerHTML = `<img src="${c.icon}" alt="">`;
+        mini.onclick = () => {
+          activeCaseIdx = i;
+          navIdx = navOrder.indexOf(i);
+          renderCard();
+          resetTimer();
+        };
+        fetchSvgInline(c.icon).then(svgText => { if(svgText) mini.innerHTML = svgText; }).catch(()=>{});
+
+        const dot = document.createElement('div');
+        dot.className = 'schm-map-pin-dot';
+        const bubble = document.createElement('div');
+        const dir = (parseFloat(c.pos_top) < 50 ? 'b' : 't') + (parseFloat(c.pos_left) < 50 ? 'r' : 'l');
+        bubble.className = 'schm-map-bubble dir-' + dir;
+        bubble.innerHTML = `<img src="${c.photo}" class="bubble-photo">`;
+        const tail = document.createElement('div'); tail.className = 'schm-map-bubble-tail';
+        bubble.appendChild(tail);
+
+        anchor.appendChild(dot);
+        anchor.appendChild(bubble);
+        anchor.appendChild(mini);
+        wrap.appendChild(anchor);
+      });
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] renderAnchors error:', e); }
+  }
+
+  function renderCard() {
+    try {
+      const d = cases[activeCaseIdx];
+      if (!d) return;
+      const anchors = document.querySelectorAll('.schm-map-bubble-anchor');
+      anchors.forEach((a, i) => a.classList.toggle('is-active', i === activeCaseIdx));
+
+      const heroImg = document.getElementById('schmMapHeroImg');
+      const caseCat = document.getElementById('schmMapCaseCat');
+      const caseSubtitle = document.getElementById('schmMapCaseSubtitle');
+      const caseTitle = document.getElementById('schmMapCaseTitle');
+      const caseDesc = document.getElementById('schmMapCaseDesc');
+      const caseLink = document.getElementById('schmMapCaseLink');
+      const counterCur = document.getElementById('schmMapCounterCur');
+      const cardIcon = document.getElementById('schmMapCardIcon');
+
+      if (heroImg) heroImg.src = d.photo;
+      if (caseCat) caseCat.textContent = d.category;
+      if (caseSubtitle) caseSubtitle.textContent = d.subtitle;
+      if (caseTitle) caseTitle.textContent = d.title;
+      if (caseDesc) caseDesc.textContent = d.description;
+      if (caseLink) caseLink.href = d.url || '#';
+      if (counterCur) counterCur.textContent = String(navIdx + 1).padStart(2, '0');
+
+      if (cardIcon) {
+        cardIcon.innerHTML = `<img src="${d.icon}" alt="">`;
+        fetchSvgInline(d.icon).then(svgText => { if(svgText) cardIcon.innerHTML = svgText; }).catch(()=>{});
+      }
+
+      if (window.innerWidth <= 760) {
+        const box = document.getElementById('schmMapBox');
+        if (box) {
+          const target = (parseFloat(d.pos_left) / 100 * box.scrollWidth) - (box.offsetWidth / 2);
+          box.scrollTo({ left: target, behavior: 'smooth' });
+        }
+      }
+    } catch (e) { console.warn('[SchooMy Map LP v1.0] renderCard error:', e); }
+  }
+
+  function startTimer() {
+    if(timer) clearInterval(timer);
+    timer = setInterval(() => {
+      navIdx = (navIdx + 1) % navOrder.length;
+      activeCaseIdx = navOrder[navIdx];
+      renderCard();
+    }, INTERVAL);
+  }
+  function stopTimer() { if(timer) clearInterval(timer); timer = null; }
+  function resetTimer() { if(autoplay) startTimer(); }
+
+  const playBtn = document.getElementById('schmMapPlayBtn');
+  const prevBtn = document.getElementById('schmMapPrevBtn');
+  const nextBtn = document.getElementById('schmMapNextBtn');
+
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      autoplay = !autoplay;
+      const playIcon = document.getElementById('schmMapPlayIcon');
+      const pauseIcon = document.getElementById('schmMapPauseIcon');
+      if (playIcon) playIcon.style.display = autoplay ? 'none' : 'block';
+      if (pauseIcon) pauseIcon.style.display = autoplay ? 'block' : 'none';
+      if(autoplay) startTimer(); else stopTimer();
+    });
+  }
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      navIdx = (navIdx - 1 + navOrder.length) % navOrder.length;
+      activeCaseIdx = navOrder[navIdx];
+      renderCard(); resetTimer();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      navIdx = (navIdx + 1) % navOrder.length;
+      activeCaseIdx = navOrder[navIdx];
+      renderCard(); resetTimer();
+    });
+  }
+
+  main();
+})();
+</script>
+
+<!-- ====================================================
+     PART X: WordPress(SWELL)移植時に有効化するブロック
+     -----------------------------------------------------
+     ★GitHub Pages版（このファイル）では無効化しています★
+       理由: SWELLのヘッダーや .page の左右padding(32px)を
+       前提にした処理なので、標準HTMLで動かすと
+       逆にレイアウトが崩れる（横スクロール・左ズレ）ため。
+
+     ★WordPress移植時にやること★
+       1. このコメント（<!-- 〜 -->）を外してスクリプトを有効化
+       2. SWELL管理画面 → ページ設定 → ヘッダー非表示 も併用推奨
+
+     <script>
+     (function() {
+       'use strict';
+       function isPC() { return window.innerWidth >= 960; }
+       function applyHeaderHide() {
+         if (!isPC()) return;
+         try {
+           var header = document.getElementById('header');
+           if (header) header.style.setProperty('display', 'none', 'important');
+           var lHeaders = document.querySelectorAll('.l-header');
+           lHeaders.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
+           var pageTitles = document.querySelectorAll('.c-pageTitle, .p-pageTitle');
+           pageTitles.forEach(function(el) { el.style.setProperty('display', 'none', 'important'); });
+           var topSpacingSelectors = ['html','body','#body_wrap','.page','.l-content','.l-mainContent','.l-mainContent__inner','.l-mainContent__inner > .post_content','.post_content','#main_content','.l-container','#content','main','article'];
+           topSpacingSelectors.forEach(function(sel) {
+             document.querySelectorAll(sel).forEach(function(el) {
+               el.style.setProperty('padding-top', '0', 'important');
+               el.style.setProperty('margin-top', '0', 'important');
+             });
+           });
+           document.documentElement.style.setProperty('--swl-offset_y', '0px', 'important');
+           document.documentElement.style.setProperty('--swl-headerH', '0px', 'important');
+           document.documentElement.style.setProperty('--swl-fix_headerH', '0px', 'important');
+           var wrapper = document.querySelector('.schoomy-nav-overlay-host');
+           if (wrapper) {
+             wrapper.style.setProperty('margin-top', '0', 'important');
+             wrapper.style.setProperty('padding-top', '0', 'important');
+             wrapper.style.setProperty('margin-left', '-32px', 'important');
+             wrapper.style.setProperty('margin-right', '-32px', 'important');
+             wrapper.style.setProperty('width', 'calc(100% + 64px)', 'important');
+           }
+         } catch(e) { console.warn('[SchooMy LP] applyHeaderHide error:', e); }
+       }
+       if (document.readyState === 'loading') {
+         document.addEventListener('DOMContentLoaded', applyHeaderHide);
+       } else { applyHeaderHide(); }
+       setTimeout(applyHeaderHide, 100);
+       setTimeout(applyHeaderHide, 500);
+       setTimeout(applyHeaderHide, 1500);
+       window.addEventListener('resize', function() {
+         if (isPC()) { applyHeaderHide(); }
+         else {
+           var header = document.getElementById('header');
+           if (header) header.style.removeProperty('display');
+           document.querySelectorAll('.l-header').forEach(function(el) { el.style.removeProperty('display'); });
+         }
+       });
+     })();
+     </script>
+==================================================== -->
+
+<!-- バージョン: LP v1.0 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル -->
+</body>
+</html>
