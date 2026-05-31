@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.8</title>
+<title>SchooMy 活用マップ ｜ v1.9</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -110,6 +110,21 @@ body.schm-intro-lock { overflow: hidden !important; }
   .schm-intro-jitsu { width: 62px; }
   .schm-intro-loading-boy { width: 80px; }
 }
+/* v1.9: コマリー“オバケ”（元センサー位置にランダム出現・ふわっと出て消える） */
+.schm-ghost {
+  position: absolute; left: 0; top: 0;
+  width: clamp(42px, 3.6vw, 72px); height: auto;
+  transform: translate(-50%, -50%) translateY(12px);
+  opacity: 0;
+  pointer-events: auto; cursor: pointer; z-index: 7;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.22));
+  transition: opacity 1.4s ease, transform 1.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.schm-ghost img { width: 100%; height: auto; display: block; pointer-events: none; animation: schmGhostBob 3.4s ease-in-out infinite; }
+.schm-ghost.is-in { opacity: 0.92; transform: translate(-50%, -50%) translateY(0); }
+.schm-ghost.is-out { opacity: 0; transform: translate(-50%, -50%) translateY(-30px); }
+@keyframes schmGhostBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media screen and (max-width: 760px) { .schm-ghost { width: 46px; } }
 </style>
 </head>
 <body>
@@ -968,7 +983,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.8</span>
+        <span class="schm-map-version">LP v1.9</span>
       </div>
     </div>
   </div>
@@ -1343,6 +1358,7 @@ body.schm-intro-lock { overflow: hidden !important; }
       // if (autoplay) startTimer();
 
       loadCharacters().catch(e => console.warn('[SchooMy Map LP v1.7] characters load error:', e));
+      startGhosts(); // v1.9: コマリーのオバケを元センサー位置にランダム出現
 
       setTimeout(function() { try { adjustCardPosition(); applyScale(); } catch (e) {} }, 50);
     } catch (e) { console.error('[SchooMy Map LP v1.0] main error:', e); }
@@ -1584,6 +1600,68 @@ body.schm-intro-lock { overflow: hidden !important; }
     });
   }
 
+  /* === v1.9: コマリー“オバケ”出現システム（cases位置を流用） === */
+  const GHOST_COUNT = 3;
+  const GHOST_LIFE_MIN = 4500, GHOST_LIFE_MAX = 8000; // 浮遊時間(ms)
+  const GHOST_FADE_MS = 1700;                          // 退場フェード(ms)
+  const ghostUsed = new Set();
+  let ghostCases = [];
+
+  function ghostPickFree(){
+    const free = [];
+    for (let i = 0; i < ghostCases.length; i++){ if (!ghostUsed.has(i)) free.push(i); }
+    return free.length ? free[Math.floor(Math.random() * free.length)] : -1;
+  }
+  function spawnOneGhost(){
+    try {
+      const wrap = document.getElementById('schmCharWrap');
+      if (!wrap) return;
+      const ci = ghostPickFree();
+      if (ci < 0) return;
+      ghostUsed.add(ci);
+      const c = ghostCases[ci];
+      const el = document.createElement('div');
+      el.className = 'schm-ghost';
+      el.style.left = c.pos_left; el.style.top = c.pos_top;
+      const img = document.createElement('img');
+      img.src = 'assets/komari.png'; img.alt = 'コマリー'; img.draggable = false;
+      el.appendChild(img);
+      // タップ → 同じモーダル（写真=photo / 文章=description / 詳しく見る=url）
+      el.addEventListener('click', function(){
+        try {
+          if (typeof openCharModal === 'function') {
+            openCharModal({ image: c.photo, name: c.title, message: c.description, link_url: c.url || '', bubble_color: '#E88A0A' });
+          }
+        } catch(e) {}
+      });
+      wrap.appendChild(el);
+      // ふわっとフェードイン
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('is-in'); }); });
+      // 寿命後に退場
+      const life = randInt(GHOST_LIFE_MIN, GHOST_LIFE_MAX);
+      setTimeout(function(){ despawnGhost(el, ci); }, life);
+    } catch(e) { console.warn('[SchooMy Map LP v1.9] spawnOneGhost error:', e); }
+  }
+  function despawnGhost(el, ci){
+    try {
+      el.classList.remove('is-in');
+      el.classList.add('is-out'); // オバケっぽく上にスーッと消える
+      setTimeout(function(){
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+        ghostUsed.delete(ci);
+        spawnOneGhost(); // 別の元センサー位置にまた出現
+      }, GHOST_FADE_MS);
+    } catch(e) {}
+  }
+  function startGhosts(){
+    try {
+      ghostCases = cases.filter(function(c){ return isValidPosValue(c.pos_left) && isValidPosValue(c.pos_top); });
+      if (!ghostCases.length) return;
+      const n = Math.min(GHOST_COUNT, ghostCases.length);
+      for (let i = 0; i < n; i++){ setTimeout(spawnOneGhost, i * 700); }
+    } catch(e) { console.warn('[SchooMy Map LP v1.9] startGhosts error:', e); }
+  }
+
   // v1.8: イントロ完了後の自動モーダル表示用にopenCharModalを公開
   try { window.schmOpenCharModal = openCharModal; } catch(e) {}
 
@@ -1654,7 +1732,7 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.8 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.9 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
      v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
@@ -1663,7 +1741,8 @@ body.schm-intro-lock { overflow: hidden !important; }
      v1.5変更: Loadingに「じっ」(assets/intro-jitsu.png)を男の子の上に追加。進行バーを“流れ”から“0→100%の確定進行”に変更(満タン=完了→マップ)。白トラックに影＋枠を付けオレンジ背景でも目立つように。男の子を142pxに。
      v1.6変更: 進行バーをグラデから“べた塗り4色”に(比率 ティール31/クリーム46/オレンジ8/ブルー15、縦帯画像準拠・色はブランドhex)。じっ76px/男の子96px(スマホは62/80)に縮小。
      v1.7変更: マップ上の事例ピン(センサーアイコン+写真吹き出し)と左下の事例カードを非表示にし、マップはキャラのみに。casesの読み込みは温存（main内の3行を戻せば復活可）。
-     v1.8変更: Loadingの「Loading…」テキスト削除。イントロ完了後に「コマリー」紹介モーダルを自動表示(既存モーダル流用・ボタン無し・画像assets/komari.png仮)。openCharModalをwindowに公開しPART INTROから呼ぶ。 -->
+     v1.8変更: Loadingの「Loading…」テキスト削除。イントロ完了後に「コマリー」紹介モーダルを自動表示(既存モーダル流用・ボタン無し・画像assets/komari.png仮)。openCharModalをwindowに公開しPART INTROから呼ぶ。
+     v1.9変更: コマリーを“オバケ”として元センサー位置(cases)にランダム3体出現。ふわっと出て→浮遊→上にスーッと消え→別位置に再出現。タップで同じモーダル(写真=photo/文章=description/詳しく見る=url)。データは既存casesを流用。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
