@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.12</title>
+<title>SchooMy 活用マップ ｜ v1.13</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -12,6 +12,7 @@
      データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
      v1.11: モーダル本文にcharacters CSVの「LPmessage」列を表示（吹き出しは従来のmessageのまま／LPmessage空欄ならmessageにフォールバック／TOPは無変更）
      v1.12: 全画面イントロ画像をプレースホルダーから本番5枚(ayashi01-05.png / schoomy.com)に差し替え
+     v1.13: イントロのドット・スクロールヒント・スキップボタンを廃止／スライド余白を詰めて画像を少し大きく(9vh8vw→6vh5vw)
 ====================================================== -->
 <style>
   html, body {
@@ -44,7 +45,7 @@ body.schm-intro-lock { overflow: hidden !important; }
 .schm-intro-slide {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  padding: 9vh 8vw; box-sizing: border-box;
+  padding: 6vh 5vw; box-sizing: border-box; /* v1.13: 余白を詰めて画像を少し大きく（旧 9vh 8vw） */
   opacity: 0; transform: scale(0.97);
   transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.34,1.56,0.64,1);
   pointer-events: none;
@@ -54,29 +55,7 @@ body.schm-intro-lock { overflow: hidden !important; }
   max-width: 100%; max-height: 100%; object-fit: contain;
   filter: drop-shadow(0 12px 32px rgba(0,0,0,0.18));
 }
-.schm-intro-dots {
-  position: absolute; left: 0; right: 0; bottom: 26px;
-  display: flex; gap: 10px; justify-content: center; z-index: 3;
-}
-.schm-intro-dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: rgba(255,255,255,0.45); transition: 0.3s;
-}
-.schm-intro-dot.is-active { background: #ffffff; transform: scale(1.3); }
-.schm-intro-hint {
-  position: absolute; left: 0; right: 0; bottom: 50px; text-align: center;
-  color: #ffffff; font-weight: 700; font-size: 13px; letter-spacing: 0.06em;
-  opacity: 0.92; z-index: 3; animation: schmIntroHintBob 1.8s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes schmIntroHintBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
-.schm-intro-skip {
-  position: absolute; top: 18px; right: 18px; z-index: 4;
-  background: rgba(255,255,255,0.2); color: #ffffff; border: none;
-  border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: 12px;
-  cursor: pointer; font-family: inherit; transition: 0.2s;
-}
-.schm-intro-skip:hover { background: rgba(255,255,255,0.35); }
+/* v1.13: ドット・スクロールヒント・スキップを廃止 */
 .schm-intro-loading {
   position: absolute; inset: 0; background: #E4A334; z-index: 5;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
@@ -133,9 +112,6 @@ body.schm-intro-lock { overflow: hidden !important; }
 <!-- ====== v1.2 全画面イントロ（スクロール連動→Loading→マップ） ====== -->
 <div id="schmIntro" aria-hidden="false">
   <div class="schm-intro-stage" id="schmIntroStage"></div>
-  <div class="schm-intro-dots" id="schmIntroDots"></div>
-  <div class="schm-intro-hint" id="schmIntroHint">スクロールで進む &#8595;</div>
-  <button type="button" class="schm-intro-skip" id="schmIntroSkip">スキップ</button>
   <div class="schm-intro-loading" id="schmIntroLoading">
     <div class="schm-intro-figure">
       <img class="schm-intro-jitsu" src="assets/intro-jitsu.png" alt="じっ">
@@ -986,7 +962,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.12</span>
+        <span class="schm-map-version">LP v1.13</span>
       </div>
     </div>
   </div>
@@ -1782,7 +1758,6 @@ body.schm-intro-lock { overflow: hidden !important; }
   if (!INTRO_IMAGES.length) { intro.parentNode && intro.parentNode.removeChild(intro); return; }
 
   const stage   = document.getElementById('schmIntroStage');
-  const dotsWrap = document.getElementById('schmIntroDots');
   const loading = document.getElementById('schmIntroLoading');
   const hint    = document.getElementById('schmIntroHint');
   const skip    = document.getElementById('schmIntroSkip');
@@ -1791,7 +1766,7 @@ body.schm-intro-lock { overflow: hidden !important; }
 
   document.body.classList.add('schm-intro-lock');
 
-  // スライド & ドット生成
+  // スライド生成（v1.13: ドット廃止）
   INTRO_IMAGES.forEach(function(src, i){
     const slide = document.createElement('div');
     slide.className = 'schm-intro-slide' + (i === 0 ? ' is-active' : '');
@@ -1799,17 +1774,11 @@ body.schm-intro-lock { overflow: hidden !important; }
     img.src = src; img.alt = 'intro ' + (i+1); img.draggable = false;
     slide.appendChild(img);
     stage.appendChild(slide);
-
-    const dot = document.createElement('div');
-    dot.className = 'schm-intro-dot' + (i === 0 ? ' is-active' : '');
-    dotsWrap.appendChild(dot);
   });
   const slides = stage.querySelectorAll('.schm-intro-slide');
-  const dots = dotsWrap.querySelectorAll('.schm-intro-dot');
 
   function show(n){
     slides.forEach(function(s, i){ s.classList.toggle('is-active', i === n); });
-    dots.forEach(function(d, i){ d.classList.toggle('is-active', i === n); });
   }
 
   function advance(){
@@ -1905,4 +1874,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.12 / イントロ画像5枚を本番(ayashi01-05)に差し替え -->
+<!-- SchooMy 活用マップ LP v1.13 / イントロのドット・ヒント・スキップ廃止＋画像を少し拡大 -->
