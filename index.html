@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.14</title>
+<title>SchooMy 活用マップ ｜ v1.15</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -14,6 +14,7 @@
      v1.12: 全画面イントロ画像をプレースホルダーから本番5枚(ayashi01-05.png / schoomy.com)に差し替え
      v1.13: イントロのドット・スクロールヒント・スキップボタンを廃止／スライド余白を詰めて画像を少し大きく(9vh8vw→6vh5vw)
      v1.14: イントロ下部に控えめな下向き矢印(↓)だけを表示（白半透明・ふわっと上下・クリック判定なし・最後の画像でLoading移行時に消える）
+     v1.15: コマリーのオバケのモーダル本文をcases CSVの「LPayashi」列に変更（空欄ならdescriptionにフォールバック／写真・詳しく見るは無変更／characters側LPmessageとは独立）
 ====================================================== -->
 <style>
   html, body {
@@ -974,7 +975,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.14</span>
+        <span class="schm-map-version">LP v1.15</span>
       </div>
     </div>
   </div>
@@ -1333,6 +1334,7 @@ body.schm-intro-lock { overflow: hidden !important; }
         return {
           pos_left: r.pos_left || '50%', pos_top: r.pos_top || '50%',
           category: r.category, subtitle: r.subtitle, title: r.title, description: r.description,
+          lp_ayashi: r.LPayashi || '', /* v1.15: コマリーのオバケのモーダル本文用。空欄ならdescriptionにフォールバック */
           photo: normalizeDriveUrl(r.photo_url || r.url),
           icon: iconUrl || normalizeDriveUrl(r.photo_url || r.url),
           url: r.url || ''
@@ -1629,11 +1631,12 @@ body.schm-intro-lock { overflow: hidden !important; }
       const img = document.createElement('img');
       img.src = 'assets/komari.png'; img.alt = 'コマリー'; img.draggable = false;
       el.appendChild(img);
-      // タップ → 同じモーダル（写真=photo / 文章=description / 詳しく見る=url）
+      // タップ → 同じモーダル（写真=photo / 文章=LPayashi優先・空欄ならdescription / 詳しく見る=url）
       el.addEventListener('click', function(){
         try {
           if (typeof openCharModal === 'function') {
-            openCharModal({ image: c.photo, name: c.title, message: c.description, link_url: c.url || '', bubble_color: '#E88A0A' });
+            const ghostText = (c.lp_ayashi && c.lp_ayashi.trim() !== '') ? c.lp_ayashi : (c.description || '');
+            openCharModal({ image: c.photo, name: c.title, message: ghostText, link_url: c.url || '', bubble_color: '#E88A0A' });
           }
         } catch(e) {}
       });
@@ -1886,4 +1889,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
-<!-- SchooMy 活用マップ LP v1.14 / イントロ下部に控えめな下向き矢印を表示 -->
+<!-- SchooMy 活用マップ LP v1.15 / オバケのモーダル本文=cases LPayashi列対応 -->
