@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.2</title>
+<title>SchooMy 活用マップ ｜ v1.3</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -28,7 +28,7 @@
 ========================================================= */
 #schmIntro {
   position: fixed; inset: 0; z-index: 10000;
-  background: #E88A0A;
+  background: #E3AB4A;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; touch-action: none;
   font-family: "Noto Sans JP", "Meiryo", sans-serif;
@@ -76,7 +76,7 @@ body.schm-intro-lock { overflow: hidden !important; }
 }
 .schm-intro-skip:hover { background: rgba(255,255,255,0.35); }
 .schm-intro-loading {
-  position: absolute; inset: 0; background: #E88A0A; z-index: 5;
+  position: absolute; inset: 0; background: #E3AB4A; z-index: 5;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
   opacity: 0; visibility: hidden; transition: opacity 0.4s ease;
 }
@@ -942,7 +942,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.2</span>
+        <span class="schm-map-version">LP v1.3</span>
       </div>
     </div>
   </div>
@@ -1622,10 +1622,11 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.2 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.3 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
-     v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。 -->
+     v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
+     v1.3変更: イントロ背景色をキャラの髪のオレンジ #E3AB4A に変更（ブランドオレンジ#E88A0Aはマップ内ボタン等で維持）。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
