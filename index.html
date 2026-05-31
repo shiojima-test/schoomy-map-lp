@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.7</title>
+<title>SchooMy 活用マップ ｜ v1.8</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
@@ -125,7 +125,6 @@ body.schm-intro-lock { overflow: hidden !important; }
       <img class="schm-intro-loading-boy" src="assets/intro-boy.png" alt="">
     </div>
     <div class="schm-intro-bar"><div class="schm-intro-bar-fill" id="schmIntroBarFill"></div></div>
-    <div class="schm-intro-loading-text">Loading&#8230;</div>
   </div>
 </div>
 
@@ -969,7 +968,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.7</span>
+        <span class="schm-map-version">LP v1.8</span>
       </div>
     </div>
   </div>
@@ -1585,6 +1584,9 @@ body.schm-intro-lock { overflow: hidden !important; }
     });
   }
 
+  // v1.8: イントロ完了後の自動モーダル表示用にopenCharModalを公開
+  try { window.schmOpenCharModal = openCharModal; } catch(e) {}
+
   main();
 })();
 </script>
@@ -1652,7 +1654,7 @@ body.schm-intro-lock { overflow: hidden !important; }
      </script>
 ==================================================== -->
 
-<!-- バージョン: LP v1.7 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
+<!-- バージョン: LP v1.8 / 2026-05-31 / base: overlay v6.0 + map v3.5 / キャラクリック→ページ内モーダル
      v1.1変更: スマホで事例カードを非表示にし、マップ（スクーミーワールド）を画面全体の高さで表示。
               横スクロールでワールド全体を閲覧。自動再生による横スクロールのドリフトを抑止（タップ移動は維持）。
      v1.2変更: 全画面イントロを追加（背景オレンジ#E88A0A・透過PNG5枚をスクロール/スワイプ連動で切替→Loading→マップ）。毎回表示。画像URLはPART INTROのINTRO_IMAGES配列で差し替え。
@@ -1660,7 +1662,8 @@ body.schm-intro-lock { overflow: hidden !important; }
      v1.4変更: イントロ/Loading背景を壁紙準拠の#E4A334に。Loading画面に後ろ向きの男の子(assets/intro-boy.png)を中央表示し、スピナーを4色(ティール/クリーム/オレンジ/ブルー)の左→右フローバーに変更。
      v1.5変更: Loadingに「じっ」(assets/intro-jitsu.png)を男の子の上に追加。進行バーを“流れ”から“0→100%の確定進行”に変更(満タン=完了→マップ)。白トラックに影＋枠を付けオレンジ背景でも目立つように。男の子を142pxに。
      v1.6変更: 進行バーをグラデから“べた塗り4色”に(比率 ティール31/クリーム46/オレンジ8/ブルー15、縦帯画像準拠・色はブランドhex)。じっ76px/男の子96px(スマホは62/80)に縮小。
-     v1.7変更: マップ上の事例ピン(センサーアイコン+写真吹き出し)と左下の事例カードを非表示にし、マップはキャラのみに。casesの読み込みは温存（main内の3行を戻せば復活可）。 -->
+     v1.7変更: マップ上の事例ピン(センサーアイコン+写真吹き出し)と左下の事例カードを非表示にし、マップはキャラのみに。casesの読み込みは温存（main内の3行を戻せば復活可）。
+     v1.8変更: Loadingの「Loading…」テキスト削除。イントロ完了後に「コマリー」紹介モーダルを自動表示(既存モーダル流用・ボタン無し・画像assets/komari.png仮)。openCharModalをwindowに公開しPART INTROから呼ぶ。 -->
 
 <script>
 /* PART INTRO (v1.2): スクロール連動の画像イントロ → Loading → マップ表示 */
@@ -1751,6 +1754,20 @@ body.schm-intro-lock { overflow: hidden !important; }
     document.body.classList.remove('schm-intro-lock');
     setTimeout(function(){ if (intro && intro.parentNode) intro.parentNode.removeChild(intro); }, 700);
     try { window.dispatchEvent(new Event('resize')); } catch(e){}
+    // v1.8: イントロ後にまず「コマリー」紹介モーダルを自動表示（ボタン無し）
+    setTimeout(function(){
+      try {
+        if (typeof window.schmOpenCharModal === 'function') {
+          window.schmOpenCharModal({
+            image: 'assets/komari.png',
+            name: 'コマリー',
+            message: 'あやしい。と思ったところにたまにあらわれるオバケ。ヒトがあやしいと思い「もしかしたら、こうかも、、、」と思った言葉になる前の想いが集まって見えるようになったと言われている。あやしいと思わなくなったヒトには見えなくなるウワサがある。',
+            link_url: '',
+            bubble_color: '#E88A0A'
+          });
+        }
+      } catch(e) {}
+    }, 720);
   }
 
   // ホイール（1ジェスチャ=1枚。クールダウンで取りこぼし/飛ばし防止）
