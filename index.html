@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SchooMy 活用マップ ｜ v1.10</title>
+<title>SchooMy 活用マップ ｜ v1.11</title>
 <meta name="description" content="スクーミーの活用事例をマップで紹介するランディングページ">
 <!-- ======================================================
      SchooMy 活用マップ LP v1.2
      base: Navigation Overlay v6.0 + Map v3.5
      新機能: キャラクリックでページ内モーダル表示（遷移なし）
      データ: 既存の公開CSVをそのまま流用（スプシ変更なし）
+     v1.11: モーダル本文にcharacters CSVの「LPmessage」列を表示（吹き出しは従来のmessageのまま／LPmessage空欄ならmessageにフォールバック／TOPは無変更）
 ====================================================== -->
 <style>
   html, body {
@@ -984,7 +985,7 @@ body.schm-intro-lock { overflow: hidden !important; }
             </div>
           </div>
         </aside>
-        <span class="schm-map-version">LP v1.10</span>
+        <span class="schm-map-version">LP v1.11</span>
       </div>
     </div>
   </div>
@@ -1273,8 +1274,10 @@ body.schm-intro-lock { overflow: hidden !important; }
         nameEl.style.display = 'none';
       }
 
-      // メッセージ
-      msgEl.textContent = (c.message && c.message.trim() !== '') ? c.message : '';
+      // メッセージ（v1.11: モーダル本文はLPmessage優先。空欄なら吹き出しと同じmessageにフォールバック）
+      const modalText = (c.lp_message && c.lp_message.trim() !== '') ? c.lp_message
+                       : ((c.message && c.message.trim() !== '') ? c.message : '');
+      msgEl.textContent = modalText;
 
       // === 将来拡張ポイント =========================================
       //   スプシに新列 popup_title / popup_body / popup_image / popup_button
@@ -1389,6 +1392,7 @@ body.schm-intro-lock { overflow: hidden !important; }
           pos_left: r.pos_left || '50%',
           pos_top: r.pos_top || '50%',
           message: r.message || '',
+          lp_message: r.LPmessage || '', /* v1.11: モーダル本文用。空欄ならmessageにフォールバック */
           link_url: r.link_url || '',
           bubble_dir: (r.bubble_dir || '').trim().toLowerCase(),
           size: resolveCharSize(r.size),
@@ -1900,3 +1904,4 @@ body.schm-intro-lock { overflow: hidden !important; }
 
 </body>
 </html>
+<!-- SchooMy 活用マップ LP v1.11 / モーダル本文=LPmessage列対応 -->
